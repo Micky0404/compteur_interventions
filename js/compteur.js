@@ -26,6 +26,12 @@ auth.onAuthStateChanged(async (user) => {
 
   document.getElementById("pseudo").textContent = snap.data().pseudo;
 
+  // 🔥 Afficher le bouton admin si rôle = admin
+if (snap.data().role === "admin") {
+  const adminBtn = document.getElementById("admin-btn");
+  if (adminBtn) adminBtn.style.display = "block";
+}
+
   loadVehicles();
 });
 
