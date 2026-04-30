@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Compteur véhicules</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <h1>Véhicules de <span id="pseudo"></span></h1>
+
+  <button id="addVehicleBtn">Ajouter un véhicule</button>
+
+  <div id="vehicleList"></div>
+
+</div>
+
+<!-- 🔥 MODALE AJOUT VEHICULE -->
+<div class="modal" id="vehicleModal">
+  <div class="modal-content">
+    <h2>Ajouter un véhicule</h2>
+
+    <input type="text" id="vehicleName" placeholder="Nom du véhicule">
+
+    <br><br>
+
+    <button id="takePhotoBtn">Prendre une photo</button>
+    <br><br>
+    <input type="file" id="uploadImage" accept="image/*">
+
+    <br><br>
+    <button id="saveVehicleBtn">Enregistrer</button>
+  </div>
+</div>
+
+<script type="module" src="./js/compteur.js"></script>
+
+</body>
+</html>

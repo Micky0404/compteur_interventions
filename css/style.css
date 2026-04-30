@@ -1,0 +1,87 @@
+/* ---------------------------------------------------------
+   🎨 THEME PREMIUM ROUGE / NOIR
+--------------------------------------------------------- */
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #0d0d0d;
+  color: #f2f2f2;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Conteneur */
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+/* Titres */
+h1, h2, h3 {
+  color: #ff2a2a;
+  text-shadow: 0 0 10px rgba(255,0,0,0.4);
+}
+
+/* Boutons */
+button {
+  padding: 12px 20px;
+  background: #ff2a2a;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #ff4444;
+  box-shadow: 0 0 15px rgba(255,0,0,0.6);
+}
+
+/* Carte véhicule */
+.vehicle-card {
+  background: #111;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 15px rgba(255,0,0,0.25);
+}
+
+.vehicle-card img {
+  width: 100%;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.vehicle-card img:hover {
+  box-shadow: 0 0 15px rgba(255,0,0,0.5);
+}
+
+/* Modale */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #111;
+  padding: 30px;
+  width: 400px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 0 25px rgba(255,0,0,0.4);
+}
+
+input[type="file"] {
+  margin-top: 15px;
+}
