@@ -27,6 +27,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (loginBtn) loginBtn.addEventListener("click", login);
   if (registerBtn) registerBtn.addEventListener("click", registerUser);
+
+  // 🔥 Bouton "Déjà un compte ? Se connecter"
+  const goLoginBtn = document.getElementById("goLoginBtn");
+  if (goLoginBtn) {
+    goLoginBtn.addEventListener("click", () => {
+      window.location.href = "./login.html";
+    });
+  }
 });
 
 
