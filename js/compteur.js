@@ -128,3 +128,12 @@ function toBase64(file) {
     reader.readAsDataURL(file);
   });
 }
+
+// ---------------------------------------------------------
+// 🔥 DÉCONNEXION
+// ---------------------------------------------------------
+document.getElementById("logout-btn").addEventListener("click", async () => {
+  await auth.signOut();
+  window.location.href = "./login.html";
+});
+
