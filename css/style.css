@@ -85,3 +85,15 @@ button:hover {
 input[type="file"] {
   margin-top: 15px;
 }
+/* Bouton +1 sortie */
+.add-sortie-btn {
+  margin-top: 10px;
+  width: 100%;
+  background: #ff2a2a;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.add-sortie-btn:hover {
+  background: #ff4444;
+}
