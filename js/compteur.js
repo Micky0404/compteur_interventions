@@ -3,7 +3,6 @@ import { auth, db } from "./firebase-config.js";
 import {
   doc,
   getDoc,
-  setDoc,
   updateDoc,
   collection,
   addDoc,
@@ -26,11 +25,11 @@ auth.onAuthStateChanged(async (user) => {
 
   document.getElementById("pseudo").textContent = snap.data().pseudo;
 
-  // 🔥 Afficher le bouton admin si rôle = admin
-if (snap.data().role === "admin") {
-  const adminBtn = document.getElementById("admin-btn");
-  if (adminBtn) adminBtn.style.display = "block";
-}
+  // Afficher bouton admin
+  if (snap.data().role === "admin") {
+    const adminBtn = document.getElementById("admin-btn");
+    if (adminBtn) adminBtn.style.display = "block";
+  }
 
   loadVehicles();
 });
@@ -53,15 +52,20 @@ async function loadVehicles() {
     list.innerHTML += `
       <div class="vehicle-card">
         <h3>${v.name}</h3>
-        <img src="${v.imageUrl}" data-id="${docu.id}">
+        <img src="${v.imageUrl}">
         <p>Sorties : <strong>${v.sorties}</strong></p>
+
+        <!-- 🔥 Bouton AJOUT SORTIE -->
+        <button class="add-sortie-btn" data-id="${docu.id}">
+          +1 sortie
+        </button>
       </div>
     `;
   });
 
-  // Double clic sur image → sorties++
-  document.querySelectorAll(".vehicle-card img").forEach(img => {
-    img.addEventListener("dblclick", () => incrementVehicle(img.dataset.id));
+  // Bouton +1 sortie
+  document.querySelectorAll(".add-sortie-btn").forEach(btn => {
+    btn.addEventListener("click", () => incrementVehicle(btn.dataset.id));
   });
 }
 
@@ -84,9 +88,7 @@ async function saveVehicle() {
     return;
   }
 
-  // Convertir image en base64 (GitHub Pages friendly)
   const base64 = await toBase64(file);
-
   const user = auth.currentUser;
 
   await addDoc(collection(db, "users", user.uid, "vehicles"), {
@@ -129,6 +131,7 @@ function toBase64(file) {
   });
 }
 
+
 // ---------------------------------------------------------
 // 🔥 DÉCONNEXION
 // ---------------------------------------------------------
@@ -136,4 +139,3 @@ document.getElementById("logout-btn").addEventListener("click", async () => {
   await auth.signOut();
   window.location.href = "./login.html";
 });
-
