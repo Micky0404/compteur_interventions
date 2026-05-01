@@ -7,7 +7,8 @@ import {
   collection,
   addDoc,
   getDocs,
-  serverTimestamp
+  serverTimestamp,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 
@@ -49,23 +50,41 @@ async function loadVehicles() {
   snap.forEach(docu => {
     const v = docu.data();
 
-   list.innerHTML += `
-  <div class="vehicle-card">
-    <h3>${v.name}</h3>
-    <img src="${v.imageUrl}" data-id="${docu.id}">
-    <p>Sorties : <strong>${v.sorties}</strong></p>
+    list.innerHTML += `
+      <div class="vehicle-card">
+        <h3>${v.name}</h3>
+        <img src="${v.imageUrl}" data-id="${docu.id}">
+        <p>Sorties : <strong>${v.sorties}</strong></p>
 
-    <!-- 🔥 Bouton +1 sortie -->
-    <button class="add-sortie-btn" data-id="${docu.id}">
-      +1 sortie
-    </button>
+        <!-- 🔥 Bouton +1 sortie -->
+        <button class="add-sortie-btn" data-id="${docu.id}">
+          +1 sortie
+        </button>
 
-    <!-- ❌ Bouton suppression -->
-    <button class="delete-vehicle-btn" data-id="${docu.id}">
-      Supprimer
-    </button>
-  </div>
-`;
+        <!-- ❌ Bouton suppression -->
+        <button class="delete-vehicle-btn" data-id="${docu.id}">
+          Supprimer
+        </button>
+      </div>
+    `;
+  });
+
+  // Listener +1 sortie
+  document.querySelectorAll(".add-sortie-btn").forEach(btn => {
+    btn.addEventListener("click", () => incrementVehicle(btn.dataset.id));
+  });
+
+  // Listener suppression
+  document.querySelectorAll(".delete-vehicle-btn").forEach(btn => {
+    btn.addEventListener("click", () => deleteVehicle(btn.dataset.id));
+  });
+
+  // Listener double-clic sur image
+  document.querySelectorAll(".vehicle-card img").forEach(img => {
+    img.addEventListener("dblclick", () => incrementVehicle(img.dataset.id));
+  });
+}
+
 
 // ---------------------------------------------------------
 // 🔥 AJOUT VEHICULE
@@ -111,6 +130,21 @@ async function incrementVehicle(id) {
   const newValue = snap.data().sorties + 1;
 
   await updateDoc(ref, { sorties: newValue });
+
+  loadVehicles();
+}
+
+
+// ---------------------------------------------------------
+// ❌ SUPPRIMER UN VÉHICULE
+// ---------------------------------------------------------
+async function deleteVehicle(id) {
+  const user = auth.currentUser;
+  const ref = doc(db, "users", user.uid, "vehicles", id);
+
+  if (!confirm("Supprimer ce véhicule ?")) return;
+
+  await deleteDoc(ref);
 
   loadVehicles();
 }
