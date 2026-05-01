@@ -49,26 +49,23 @@ async function loadVehicles() {
   snap.forEach(docu => {
     const v = docu.data();
 
-    list.innerHTML += `
-      <div class="vehicle-card">
-        <h3>${v.name}</h3>
-        <img src="${v.imageUrl}">
-        <p>Sorties : <strong>${v.sorties}</strong></p>
+   list.innerHTML += `
+  <div class="vehicle-card">
+    <h3>${v.name}</h3>
+    <img src="${v.imageUrl}" data-id="${docu.id}">
+    <p>Sorties : <strong>${v.sorties}</strong></p>
 
-        <!-- 🔥 Bouton AJOUT SORTIE -->
-        <button class="add-sortie-btn" data-id="${docu.id}">
-          +1 sortie
-        </button>
-      </div>
-    `;
-  });
+    <!-- 🔥 Bouton +1 sortie -->
+    <button class="add-sortie-btn" data-id="${docu.id}">
+      +1 sortie
+    </button>
 
-  // Bouton +1 sortie
-  document.querySelectorAll(".add-sortie-btn").forEach(btn => {
-    btn.addEventListener("click", () => incrementVehicle(btn.dataset.id));
-  });
-}
-
+    <!-- ❌ Bouton suppression -->
+    <button class="delete-vehicle-btn" data-id="${docu.id}">
+      Supprimer
+    </button>
+  </div>
+`;
 
 // ---------------------------------------------------------
 // 🔥 AJOUT VEHICULE
