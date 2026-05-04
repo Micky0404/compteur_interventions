@@ -1,4 +1,13 @@
+console.log("ADMIN.JS CHARGÉ !");
+
+// ---------------------------------------------------------
+// 🔥 IMPORTS FIREBASE
+// ---------------------------------------------------------
 import { auth, db } from "./firebase-config.js";
+
+import {
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 import {
   collection,
@@ -10,9 +19,9 @@ import {
 
 
 // ---------------------------------------------------------
-// 🔥 VÉRIFIER QUE L’UTILISATEUR EST ADMIN
+// 🔒 PROTECTION ADMIN
 // ---------------------------------------------------------
-auth.onAuthStateChanged(async (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "./login.html";
     return;
@@ -21,11 +30,21 @@ auth.onAuthStateChanged(async (user) => {
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
 
-  if (!snap.exists() || snap.data().role !== "admin") {
+  if (!snap.exists()) {
+    alert("Erreur : utilisateur introuvable.");
+    window.location.href = "./login.html";
+    return;
+  }
+
+  const data = snap.data();
+
+  if (data.role !== "admin") {
     alert("Accès refusé.");
     window.location.href = "./index.html";
     return;
   }
+
+  console.log("Admin connecté :", data.pseudo);
 
   loadUsers();
 });
@@ -36,14 +55,16 @@ auth.onAuthStateChanged(async (user) => {
 // ---------------------------------------------------------
 async function loadUsers() {
   const list = document.getElementById("userList");
-  list.innerHTML = "";
+  list.innerHTML = "<p>Chargement...</p>";
 
   const usersSnap = await getDocs(collection(db, "users"));
+
+  let html = "";
 
   usersSnap.forEach((userDoc) => {
     const user = userDoc.data();
 
-    list.innerHTML += `
+    html += `
       <div class="vehicle-card">
         <h3>${user.pseudo} (${user.email})</h3>
         <p>Validé : <strong>${user.validated ? "Oui" : "Non"}</strong></p>
@@ -60,12 +81,12 @@ async function loadUsers() {
     loadVehicles(userDoc.id);
   });
 
-  // Boutons valider/désactiver
-  setTimeout(() => {
-    document.querySelectorAll(".validateBtn").forEach(btn => {
-      btn.addEventListener("click", () => toggleValidation(btn.dataset.id));
-    });
-  }, 300);
+  list.innerHTML = html;
+
+  // Activation des boutons valider/désactiver
+  document.querySelectorAll(".validateBtn").forEach(btn => {
+    btn.addEventListener("click", () => toggleValidation(btn.dataset.id));
+  });
 }
 
 
@@ -74,7 +95,7 @@ async function loadUsers() {
 // ---------------------------------------------------------
 async function loadVehicles(uid) {
   const container = document.getElementById(`vehicles-${uid}`);
-  container.innerHTML = "";
+  container.innerHTML = "<p>Chargement...</p>";
 
   const snap = await getDocs(collection(db, "users", uid, "vehicles"));
 
@@ -83,10 +104,12 @@ async function loadVehicles(uid) {
     return;
   }
 
+  let html = "";
+
   snap.forEach(docu => {
     const v = docu.data();
 
-    container.innerHTML += `
+    html += `
       <div class="vehicle-card">
         <h4>${v.name}</h4>
         <img src="${v.imageUrl}" data-uid="${uid}" data-id="${docu.id}">
@@ -95,8 +118,10 @@ async function loadVehicles(uid) {
     `;
   });
 
+  container.innerHTML = html;
+
   // Double clic admin → sorties++
-  document.querySelectorAll(`#vehicles-${uid} img`).forEach(img => {
+  container.querySelectorAll("img").forEach(img => {
     img.addEventListener("dblclick", () => incrementVehicle(uid, img.dataset.id));
   });
 }
