@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // ---------------------------------------------------------
-// 🔥 INSCRIPTION
+// 🔥 INSCRIPTION (avec validation admin)
 // ---------------------------------------------------------
 async function registerUser() {
   const pseudo   = document.getElementById("pseudo")?.value.trim();
@@ -56,15 +56,17 @@ async function registerUser() {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
+    // 🔥 Création Firestore avec validation désactivée
     await setDoc(doc(db, "users", user.uid), {
       pseudo: pseudo,
       email: email,
       role: "user",
-      validated: false,
+      validated: false,   // 🔥 L’admin doit valider
       interventions: 0,
       createdAt: serverTimestamp()
     });
 
+    alert("Inscription réussie ! Votre compte doit être validé par un administrateur.");
     window.location.href = "./login.html";
 
   } catch (error) {
@@ -73,33 +75,12 @@ async function registerUser() {
 }
 
 
+
 // ---------------------------------------------------------
-// 🔥 CONNEXION
+// 🔥 CONNEXION (bloque si non validé)
 // ---------------------------------------------------------
 async function login() {
   const email    = document.getElementById("email")?.value.trim();
   const password = document.getElementById("password")?.value;
 
-  if (!email || !password) {
-    alert("Merci de remplir tous les champs.");
-    return;
-  }
-
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    const ref  = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-      alert("Erreur : utilisateur introuvable dans Firestore.");
-      return;
-    }
-
-    window.location.href = "./compteur.html";
-
-  } catch (error) {
-    alert("Erreur : " + error.message);
-  }
-}
+  if (!
