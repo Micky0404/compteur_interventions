@@ -4,30 +4,117 @@
   <meta charset="UTF-8">
   <title>Connexion</title>
   <link rel="stylesheet" href="./css/style.css">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #330000, #000000);
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Conteneur principal */
+    .login-container {
+      margin-top: 140px;
+      padding: 50px 40px;
+      width: 350px;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(255, 0, 0, 0.45);
+      text-align: center;
+      animation: fadeIn 1s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Logo */
+    .logo {
+      width: 120px;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 0 12px #ff1a1a);
+      animation: pulse 2.5s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); filter: drop-shadow(0 0 10px #ff1a1a); }
+      50% { transform: scale(1.05); filter: drop-shadow(0 0 18px #ff3333); }
+      100% { transform: scale(1); filter: drop-shadow(0 0 10px #ff1a1a); }
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 25px;
+      text-shadow: 0 0 12px #ff1a1a;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      font-size: 1rem;
+      box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+    }
+
+    #login-btn {
+      width: 100%;
+      padding: 14px;
+      margin-top: 15px;
+      background: linear-gradient(90deg, #ff1a1a, #b30000);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+    }
+
+    #login-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(255, 0, 0, 0.7);
+    }
+  </style>
 </head>
+
 <body>
-  
+
 <header class="neo-header">
   <div class="header-left">
     <h1 class="app-title">Compteur d'interventions</h1>
   </div>
 
   <div class="header-right">
-    <button class="header-btn" onclick="window.location.href='./login.html'">Connexion</button>
     <button class="header-btn" onclick="window.location.href='./register.html'">Créer un compte</button>
   </div>
 </header>
 
+<div class="login-container">
+
+  <!-- TON IMAGE -->
+  <img src="./monimage.png" class="logo" alt="Logo">
 
   <h2>Connexion</h2>
 
   <input id="email" type="email" placeholder="Email">
   <input id="password" type="password" placeholder="Mot de passe">
 
-  <!-- 🔥 ID corrigé -->
   <button id="login-btn">Se connecter</button>
+</div>
 
-  <script type="module" src="./js/auth.js"></script>
+<script type="module" src="./js/auth.js"></script>
 
 </body>
 </html>
