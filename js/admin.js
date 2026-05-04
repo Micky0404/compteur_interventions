@@ -38,14 +38,12 @@ async function loadUsers() {
   const list = document.getElementById("userList");
   list.innerHTML = "";
 
-  const usersRef = collection(db, "users");
-  const usersSnap = await getDocs(usersRef);
+  const usersSnap = await getDocs(collection(db, "users"));
 
-  usersSnap.forEach(async (userDoc) => {
+  usersSnap.forEach((userDoc) => {
     const user = userDoc.data();
 
-    // Carte utilisateur premium
-    let html = `
+    list.innerHTML += `
       <div class="vehicle-card">
         <h3>${user.pseudo} (${user.email})</h3>
         <p>Validé : <strong>${user.validated ? "Oui" : "Non"}</strong></p>
@@ -59,8 +57,6 @@ async function loadUsers() {
       </div>
     `;
 
-    list.innerHTML += html;
-
     loadVehicles(userDoc.id);
   });
 
@@ -69,7 +65,7 @@ async function loadUsers() {
     document.querySelectorAll(".validateBtn").forEach(btn => {
       btn.addEventListener("click", () => toggleValidation(btn.dataset.id));
     });
-  }, 500);
+  }, 300);
 }
 
 
@@ -80,8 +76,7 @@ async function loadVehicles(uid) {
   const container = document.getElementById(`vehicles-${uid}`);
   container.innerHTML = "";
 
-  const ref = collection(db, "users", uid, "vehicles");
-  const snap = await getDocs(ref);
+  const snap = await getDocs(collection(db, "users", uid, "vehicles"));
 
   if (snap.empty) {
     container.innerHTML = "<p>Aucun véhicule</p>";
@@ -114,9 +109,7 @@ async function incrementVehicle(uid, vehicleId) {
   const ref = doc(db, "users", uid, "vehicles", vehicleId);
   const snap = await getDoc(ref);
 
-  const newValue = snap.data().sorties + 1;
-
-  await updateDoc(ref, { sorties: newValue });
+  await updateDoc(ref, { sorties: snap.data().sorties + 1 });
 
   loadVehicles(uid);
 }
@@ -129,9 +122,7 @@ async function toggleValidation(uid) {
   const ref = doc(db, "users", uid);
   const snap = await getDoc(ref);
 
-  const newValue = !snap.data().validated;
-
-  await updateDoc(ref, { validated: newValue });
+  await updateDoc(ref, { validated: !snap.data().validated });
 
   loadUsers();
 }
