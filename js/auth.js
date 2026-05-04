@@ -38,7 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-
 // ---------------------------------------------------------
 // 🔥 INSCRIPTION (avec validation admin)
 // ---------------------------------------------------------
@@ -83,4 +82,41 @@ async function login() {
   const email    = document.getElementById("email")?.value.trim();
   const password = document.getElementById("password")?.value;
 
-  if (!
+  // Vérification des champs
+  if (!email || !password) {
+    alert("Merci de remplir tous les champs.");
+    return;
+  }
+
+  try {
+    // Connexion Firebase
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Récupération des infos Firestore
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+
+    if (!userDoc.exists()) {
+      alert("Erreur : utilisateur introuvable dans Firestore.");
+      return;
+    }
+
+    const userData = userDoc.data();
+
+    // Vérification validation admin
+    if (!userData.validated) {
+      alert("Votre compte n'a pas encore été validé par un administrateur.");
+      return;
+    }
+
+    // Redirection selon rôle
+    if (userData.role === "admin") {
+      window.location.href = "./admin.html";
+    } else {
+      window.location.href = "./index.html";
+    }
+
+  } catch (error) {
+    alert("Erreur de connexion : " + error.message);
+  }
+}
