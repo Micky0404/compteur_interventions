@@ -118,6 +118,33 @@ async function saveVehicle() {
   loadVehicles();
 }
 
+// ---------------------------------------------------------
+// 📸 OUVERTURE CAMÉRA (mobile)
+// ---------------------------------------------------------
+const takePhotoBtn = document.getElementById("takePhotoBtn");
+const cameraInput = document.getElementById("cameraInput");
+const photoPreview = document.getElementById("photoPreview");
+
+takePhotoBtn.addEventListener("click", () => {
+  cameraInput.click(); // Ouvre la caméra du smartphone
+});
+
+// Quand une photo est prise
+cameraInput.addEventListener("change", () => {
+  const file = cameraInput.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    // Affichage de l’aperçu
+    photoPreview.src = reader.result;
+    photoPreview.style.display = "block";
+
+    // On remplace l’image uploadée par celle de la caméra
+    document.getElementById("uploadImage").files = cameraInput.files;
+  };
+  reader.readAsDataURL(file);
+});
 
 // ---------------------------------------------------------
 // 🔥 INCRÉMENTER SORTIES
