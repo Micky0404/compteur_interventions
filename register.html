@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Connexion</title>
+  <title>Inscription</title>
   <link rel="stylesheet" href="./css/style.css">
 
   <style>
@@ -18,7 +18,7 @@
     }
 
     /* Conteneur principal */
-    .login-container {
+    .register-container {
       margin-top: 140px;
       padding: 50px 40px;
       width: 350px;
@@ -68,7 +68,7 @@
       box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
     }
 
-    #login-btn {
+    #register-btn {
       width: 100%;
       padding: 14px;
       margin-top: 15px;
@@ -82,7 +82,7 @@
       box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
     }
 
-    #login-btn:hover {
+    #register-btn:hover {
       transform: scale(1.05);
       box-shadow: 0 0 25px rgba(255, 0, 0, 0.7);
     }
@@ -97,21 +97,22 @@
   </div>
 
   <div class="header-right">
-    <button class="header-btn" onclick="window.location.href='./register.html'">Créer un compte</button>
+    <button class="header-btn" onclick="window.location.href='./login.html'">Connexion</button>
   </div>
 </header>
 
-<div class="login-container">
+<div class="register-container">
 
   <!-- TON IMAGE -->
   <img src="./monimage.png" class="logo" alt="Logo">
 
-  <h2>Connexion</h2>
+  <h2>Créer un compte</h2>
 
+  <input id="pseudo" type="text" placeholder="Pseudo">
   <input id="email" type="email" placeholder="Email">
   <input id="password" type="password" placeholder="Mot de passe">
 
-  <button id="login-btn">Se connecter</button>
+  <button id="register-btn">S'inscrire</button>
 </div>
 
 <script type="module" src="./js/auth.js"></script>
