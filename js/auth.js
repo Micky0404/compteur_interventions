@@ -60,7 +60,7 @@ async function registerUser() {
       pseudo: pseudo,
       email: email,
       role: "user",
-      validated: false,   // 🔥 L’admin doit valider
+      validated: false,
       interventions: 0,
       createdAt: serverTimestamp()
     });
@@ -82,18 +82,15 @@ async function login() {
   const email    = document.getElementById("email")?.value.trim();
   const password = document.getElementById("password")?.value;
 
-  // Vérification des champs
   if (!email || !password) {
     alert("Merci de remplir tous les champs.");
     return;
   }
 
   try {
-    // Connexion Firebase
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Récupération des infos Firestore
     const userDoc = await getDoc(doc(db, "users", user.uid));
 
     if (!userDoc.exists()) {
@@ -109,12 +106,8 @@ async function login() {
       return;
     }
 
-    // Redirection selon rôle
-    if (userData.role === "admin") {
-      window.location.href = "./admin.html";
-    } else {
-      window.location.href = "./index.html";
-    }
+    // 🔥 Redirection pour TOUS les utilisateurs (admin ou non)
+    window.location.href = "./compteur.html";
 
   } catch (error) {
     alert("Erreur de connexion : " + error.message);
