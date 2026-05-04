@@ -147,7 +147,7 @@ cameraInput.addEventListener("change", () => {
 });
 
 // ---------------------------------------------------------
-// 🔥 INCRÉMENTER SORTIES
+// 🔥 INCRÉMENTER SORTIES + ENREGISTRER DANS L’HISTORIQUE
 // ---------------------------------------------------------
 async function incrementVehicle(id) {
   const user = auth.currentUser;
@@ -156,7 +156,16 @@ async function incrementVehicle(id) {
 
   const newValue = snap.data().sorties + 1;
 
+  // 🔥 1. Mettre à jour le véhicule
   await updateDoc(ref, { sorties: newValue });
+
+  // 🔥 2. Ajouter dans l’historique
+  await addDoc(collection(db, "users", user.uid, "history"), {
+    timestamp: serverTimestamp(),
+    action: "+1 sortie",
+    vehicleId: id,
+    vehicleName: snap.data().name
+  });
 
   loadVehicles();
 }
