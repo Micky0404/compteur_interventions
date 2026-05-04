@@ -141,3 +141,66 @@ input[type="text"]:focus {
 .add-sortie-btn:hover {
   background: #ff4444;
 }
+/* ---------------------------------------------------------
+   🔥 HEADER ULTRA STYLÉ (NÉON + GLASSMORPHISM)
+--------------------------------------------------------- */
+
+.neo-header {
+  width: 100%;
+  padding: 15px 25px;
+  background: rgba(20, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 0, 0, 0.35);
+  box-shadow: 0 0 25px rgba(255, 0, 0, 0.4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 24px;
+  color: #ff2a2a;
+  text-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+  letter-spacing: 1px;
+}
+
+.header-right {
+  display: flex;
+  gap: 12px;
+}
+
+.header-btn {
+  padding: 10px 18px;
+  background: rgba(255, 0, 0, 0.25);
+  border: 1px solid #ff2a2a;
+  border-radius: 10px;
+  color: #ff2a2a;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.25s;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 12px rgba(255, 0, 0, 0.3);
+}
+
+.header-btn:hover {
+  background: #ff2a2a;
+  color: white;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+  transform: translateY(-2px);
+}
+
+.logout-btn {
+  border-color: #ff4444;
+  color: #ff4444;
+}
+
+.logout-btn:hover {
+  background: #ff4444;
+  color: white;
+  box-shadow: 0 0 20px rgba(255, 50, 50, 0.8);
+}
+
