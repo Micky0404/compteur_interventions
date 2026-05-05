@@ -141,4 +141,29 @@ async function loadVehicles(uid) {
 // 🔥 ADMIN : INCRÉMENTER SORTIES D’UN VÉHICULE
 // ---------------------------------------------------------
 async function incrementVehicle(uid, vehicleId) {
-  const ref = doc(db, "users",
+  const ref = doc(db, "users", uid, "vehicles", vehicleId);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) return;
+
+  await updateDoc(ref, { sorties: snap.data().sorties + 1 });
+
+  loadVehicles(uid);
+}
+
+
+// ---------------------------------------------------------
+// 🔥 ADMIN : VALIDER / DÉSACTIVER UN UTILISATEUR
+// ---------------------------------------------------------
+async function toggleValidation(uid) {
+  const ref = doc(db, "users", uid);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) return;
+
+  const current = snap.data().validated;
+
+  await updateDoc(ref, { validated: !current });
+
+  loadUsers();
+}
