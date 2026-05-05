@@ -63,6 +63,8 @@ function drawChart(vehicleCounts) {
   const labels = Object.keys(vehicleCounts);
   const values = Object.values(vehicleCounts);
 
+  const total = values.reduce((a, b) => a + b, 0);
+
   const ctx = chartCanvas.getContext("2d");
 
   // Dégradé neon rouge
@@ -72,6 +74,7 @@ function drawChart(vehicleCounts) {
 
   new Chart(chartCanvas, {
     type: "doughnut",
+    plugins: [ChartDataLabels],
     data: {
       labels: labels,
       datasets: [{
@@ -89,12 +92,21 @@ function drawChart(vehicleCounts) {
       }]
     },
     options: {
-      cutout: "60%", // Taille du trou central
+      cutout: "60%",
       plugins: {
         legend: {
           labels: { color: "white", font: { size: 14 } }
+        },
+        datalabels: {
+          color: "white",
+          font: { weight: "bold", size: 14 },
+          formatter: (value) => {
+            const percent = (value / total) * 100;
+            return percent.toFixed(1) + "%";
+          }
         }
       }
     }
   });
 }
+
