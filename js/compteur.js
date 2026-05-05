@@ -130,19 +130,22 @@ takePhotoBtn.addEventListener("click", () => {
 });
 
 // Quand une photo est prise
-cameraInput.addEventListener("change", () => {
+cameraInput.addEventListener("change", async () => {
   const file = cameraInput.files[0];
   if (!file) return;
 
+  // 🔥 Affichage de l’aperçu
   const reader = new FileReader();
   reader.onload = () => {
     photoPreview.src = reader.result;
     photoPreview.style.display = "block";
-
-    document.getElementById("uploadImage").files = cameraInput.files;
   };
   reader.readAsDataURL(file);
+
+  // 🔥 On stocke le fichier caméra dans une variable globale
+  window.capturedPhoto = file;
 });
+
 
 
 // ---------------------------------------------------------
