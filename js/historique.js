@@ -30,26 +30,23 @@ async function loadHistory() {
 
   table.innerHTML = "";
 
-  // 🔥 Structure pour le graphique
-  const vehicleCounts = {};   // { "VSAV 1": 4, "FPT": 2 }
-  const labels = [];          // Dates
-  const values = [];          // Nombre total par date
+  // 🔥 Compteur par véhicule
+  const vehicleCounts = {}; // { "VSAV 1": 4, "FPT": 2 }
 
   snapshot.forEach((docu) => {
     const data = docu.data();
     const date = data.timestamp.toDate();
-    const dateStr = date.toLocaleDateString();
 
-    // 🔥 Tableau
+    // Tableau
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td>${dateStr}</td>
+      <td>${date.toLocaleDateString()}</td>
       <td>${date.toLocaleTimeString()}</td>
       <td>${data.vehicleName} — +1 sortie</td>
     `;
     table.appendChild(row);
 
-    // 🔥 Compter par véhicule
+    // Compter par véhicule
     if (!vehicleCounts[data.vehicleName]) {
       vehicleCounts[data.vehicleName] = 0;
     }
@@ -60,48 +57,42 @@ async function loadHistory() {
 }
 
 // ---------------------------------------------------------
-// 🔥 Nouveau graphique premium
+// 🔥 Nouveau graphique DONUT premium
 // ---------------------------------------------------------
 function drawChart(vehicleCounts) {
   const labels = Object.keys(vehicleCounts);
   const values = Object.values(vehicleCounts);
 
-  // Dégradé rouge neon
   const ctx = chartCanvas.getContext("2d");
-  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-  gradient.addColorStop(0, "rgba(255, 50, 50, 0.9)");
-  gradient.addColorStop(1, "rgba(255, 0, 0, 0.3)");
+
+  // Dégradé neon rouge
+  const gradient = ctx.createLinearGradient(0, 0, 300, 300);
+  gradient.addColorStop(0, "rgba(255, 50, 50, 1)");
+  gradient.addColorStop(1, "rgba(255, 0, 0, 0.4)");
 
   new Chart(chartCanvas, {
-    type: "bar",
+    type: "doughnut",
     data: {
       labels: labels,
       datasets: [{
         label: "Sorties par véhicule",
         data: values,
-        backgroundColor: gradient,
+        backgroundColor: [
+          "rgba(255, 50, 50, 0.9)",
+          "rgba(255, 80, 80, 0.9)",
+          "rgba(255, 0, 0, 0.9)",
+          "rgba(255, 120, 120, 0.9)"
+        ],
         borderColor: "#ff1a1a",
         borderWidth: 2,
-        borderRadius: 10,
-        hoverBackgroundColor: "rgba(255, 80, 80, 1)"
+        hoverOffset: 15
       }]
     },
     options: {
-      responsive: true,
+      cutout: "60%", // Taille du trou central
       plugins: {
         legend: {
-          labels: { color: "white" }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: "white" },
-          grid: { color: "rgba(255,255,255,0.1)" }
-        },
-        y: {
-          beginAtZero: true,
-          ticks: { color: "white" },
-          grid: { color: "rgba(255,255,255,0.1)" }
+          labels: { color: "white", font: { size: 14 } }
         }
       }
     }
