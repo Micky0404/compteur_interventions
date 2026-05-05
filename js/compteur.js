@@ -24,10 +24,20 @@ auth.onAuthStateChanged(async (user) => {
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
 
-  document.getElementById("pseudo").textContent = snap.data().pseudo;
+  if (!snap.exists()) {
+    alert("Erreur : utilisateur introuvable.");
+    auth.signOut();
+    return;
+  }
+
+  const data = snap.data();
+
+  // Affichage pseudo
+  const pseudoSpan = document.getElementById("pseudo");
+  if (pseudoSpan) pseudoSpan.textContent = data.pseudo;
 
   // Afficher bouton admin
-  if (snap.data().role === "admin") {
+  if (data.role === "admin") {
     const adminBtn = document.getElementById("admin-btn");
     if (adminBtn) adminBtn.style.display = "block";
   }
@@ -42,6 +52,9 @@ auth.onAuthStateChanged(async (user) => {
 async function loadVehicles() {
   const user = auth.currentUser;
   const list = document.getElementById("vehicleList");
+
+  if (!list) return;
+
   list.innerHTML = "";
 
   const ref = collection(db, "users", user.uid, "vehicles");
@@ -50,36 +63,30 @@ async function loadVehicles() {
   snap.forEach(docu => {
     const v = docu.data();
 
-    list.innerHTML += `
-      <div class="vehicle-card">
-        <h3>${v.name}</h3>
-        <img src="${v.imageUrl}" data-id="${docu.id}">
-        <p>Sorties : <strong>${v.sorties}</strong></p>
+    const card = document.createElement("div");
+    card.className = "vehicle-card";
 
-        <!-- 🔥 Bouton +1 sortie -->
-        <button class="add-sortie-btn" data-id="${docu.id}">
-          +1 sortie
-        </button>
+    card.innerHTML = `
+      <h3>${v.name}</h3>
+      <img src="${v.imageUrl}" data-id="${docu.id}">
+      <p>Sorties : <strong>${v.sorties}</strong></p>
 
-        <!-- ❌ Bouton suppression -->
-        <button class="delete-vehicle-btn" data-id="${docu.id}">
-          Supprimer
-        </button>
-      </div>
+      <button class="add-sortie-btn" data-id="${docu.id}">+1 sortie</button>
+      <button class="delete-vehicle-btn" data-id="${docu.id}">Supprimer</button>
     `;
+
+    list.appendChild(card);
   });
 
-  // Listener +1 sortie
+  // Listeners
   document.querySelectorAll(".add-sortie-btn").forEach(btn => {
     btn.addEventListener("click", () => incrementVehicle(btn.dataset.id));
   });
 
-  // Listener suppression
   document.querySelectorAll(".delete-vehicle-btn").forEach(btn => {
     btn.addEventListener("click", () => deleteVehicle(btn.dataset.id));
   });
 
-  // Listener double-clic sur image
   document.querySelectorAll(".vehicle-card img").forEach(img => {
     img.addEventListener("dblclick", () => incrementVehicle(img.dataset.id));
   });
@@ -89,16 +96,22 @@ async function loadVehicles() {
 // ---------------------------------------------------------
 // 🔥 AJOUT VEHICULE
 // ---------------------------------------------------------
-document.getElementById("addVehicleBtn").addEventListener("click", () => {
-  document.getElementById("vehicleModal").style.display = "flex";
-});
+const addVehicleBtn = document.getElementById("addVehicleBtn");
+const saveVehicleBtn = document.getElementById("saveVehicleBtn");
 
-document.getElementById("saveVehicleBtn").addEventListener("click", saveVehicle);
+if (addVehicleBtn) {
+  addVehicleBtn.addEventListener("click", () => {
+    document.getElementById("vehicleModal").style.display = "flex";
+  });
+}
+
+if (saveVehicleBtn) {
+  saveVehicleBtn.addEventListener("click", saveVehicle);
+}
 
 async function saveVehicle() {
   const name = document.getElementById("vehicleName").value.trim();
   const file = window.capturedPhoto || document.getElementById("uploadImage").files[0];
-
 
   if (!name || !file) {
     alert("Nom + image obligatoires");
@@ -109,60 +122,63 @@ async function saveVehicle() {
   const user = auth.currentUser;
 
   await addDoc(collection(db, "users", user.uid, "vehicles"), {
-    name: name,
+    name,
     imageUrl: base64,
     sorties: 0,
     createdAt: serverTimestamp()
   });
 
+  // Reset photo
+  window.capturedPhoto = null;
+  document.getElementById("photoPreview").style.display = "none";
+
   document.getElementById("vehicleModal").style.display = "none";
   loadVehicles();
 }
 
+
 // ---------------------------------------------------------
-// 📸 OUVERTURE CAMÉRA (mobile)
+// 📸 CAMÉRA
 // ---------------------------------------------------------
 const takePhotoBtn = document.getElementById("takePhotoBtn");
 const cameraInput = document.getElementById("cameraInput");
 const photoPreview = document.getElementById("photoPreview");
 
-takePhotoBtn.addEventListener("click", () => {
-  cameraInput.click(); // Ouvre la caméra du smartphone
-});
+if (takePhotoBtn) {
+  takePhotoBtn.addEventListener("click", () => cameraInput.click());
+}
 
-// Quand une photo est prise
-cameraInput.addEventListener("change", async () => {
-  const file = cameraInput.files[0];
-  if (!file) return;
+if (cameraInput) {
+  cameraInput.addEventListener("change", () => {
+    const file = cameraInput.files[0];
+    if (!file) return;
 
-  // 🔥 Affichage de l’aperçu
-  const reader = new FileReader();
-  reader.onload = () => {
-    photoPreview.src = reader.result;
-    photoPreview.style.display = "block";
-  };
-  reader.readAsDataURL(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      photoPreview.src = reader.result;
+      photoPreview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
 
-  // 🔥 On stocke le fichier caméra dans une variable globale
-  window.capturedPhoto = file;
-});
-
+    window.capturedPhoto = file;
+  });
+}
 
 
 // ---------------------------------------------------------
-// 🔥 INCRÉMENTER SORTIES + ENREGISTRER DANS L’HISTORIQUE
+// 🔥 INCRÉMENTER SORTIES + HISTORIQUE
 // ---------------------------------------------------------
 async function incrementVehicle(id) {
   const user = auth.currentUser;
   const ref = doc(db, "users", user.uid, "vehicles", id);
   const snap = await getDoc(ref);
 
+  if (!snap.exists()) return;
+
   const newValue = snap.data().sorties + 1;
 
-  // 🔥 1. Mettre à jour le véhicule
   await updateDoc(ref, { sorties: newValue });
 
-  // 🔥 2. Ajouter dans l’historique
   await addDoc(collection(db, "users", user.uid, "history"), {
     timestamp: serverTimestamp(),
     action: "+1 sortie",
@@ -178,12 +194,10 @@ async function incrementVehicle(id) {
 // ❌ SUPPRIMER UN VÉHICULE
 // ---------------------------------------------------------
 async function deleteVehicle(id) {
-  const user = auth.currentUser;
-  const ref = doc(db, "users", user.uid, "vehicles", id);
-
   if (!confirm("Supprimer ce véhicule ?")) return;
 
-  await deleteDoc(ref);
+  const user = auth.currentUser;
+  await deleteDoc(doc(db, "users", user.uid, "vehicles", id));
 
   loadVehicles();
 }
@@ -205,7 +219,11 @@ function toBase64(file) {
 // ---------------------------------------------------------
 // 🔥 DÉCONNEXION
 // ---------------------------------------------------------
-document.getElementById("logout-btn").addEventListener("click", async () => {
-  await auth.signOut();
-  window.location.href = "./login.html";
-});
+const logoutBtn = document.querySelector(".logout-btn");
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    await auth.signOut();
+    window.location.href = "./login.html";
+  });
+}
