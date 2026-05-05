@@ -136,15 +136,14 @@ cameraInput.addEventListener("change", () => {
 
   const reader = new FileReader();
   reader.onload = () => {
-    // Affichage de l’aperçu
     photoPreview.src = reader.result;
     photoPreview.style.display = "block";
 
-    // On remplace l’image uploadée par celle de la caméra
     document.getElementById("uploadImage").files = cameraInput.files;
   };
   reader.readAsDataURL(file);
 });
+
 
 // ---------------------------------------------------------
 // 🔥 INCRÉMENTER SORTIES + ENREGISTRER DANS L’HISTORIQUE
