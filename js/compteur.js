@@ -97,7 +97,8 @@ document.getElementById("saveVehicleBtn").addEventListener("click", saveVehicle)
 
 async function saveVehicle() {
   const name = document.getElementById("vehicleName").value.trim();
-  const file = document.getElementById("uploadImage").files[0];
+  const file = window.capturedPhoto || document.getElementById("uploadImage").files[0];
+
 
   if (!name || !file) {
     alert("Nom + image obligatoires");
