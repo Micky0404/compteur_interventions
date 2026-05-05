@@ -1,81 +1,60 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Historique des interventions</title>
-<link rel="stylesheet" href="./css/style.css">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body {
-  background:#0a0a0a;
-  color:white;
-  font-family:Arial, sans-serif;
-  padding:20px;
-  text-align:center;
-}
-
-h1 {
-  color:#ff2a2a;
-  text-shadow:0 0 8px rgba(255,42,42,0.6);
-}
-
-table {
-  width:100%;
-  margin-top:20px;
-  border-collapse:collapse;
-}
-
-th, td {
-  padding:10px;
-  border-bottom:1px solid #333;
-}
-
-th {
-  color:#ff2a2a;
-}
-
-canvas {
-  margin-top:30px;
-  background:#111;
-  padding:20px;
-  border-radius:12px;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historique des interventions</title>
+  <link rel="stylesheet" href="./css/style.css">
 </head>
 
 <body>
+
+<!-- 🔥 HEADER PRIVÉ -->
 <header class="neo-header">
   <div class="header-left">
-    <h1 class="app-title">Compteur d’interventions</h1>
+    <h1 class="app-title">Historique</h1>
   </div>
 
   <div class="header-right">
     <button class="header-btn" onclick="window.location.href='./compteur.html'">Compteur</button>
-    <button class="header-btn" onclick="window.location.href='./admin.html'">Admin</button>
-    <button class="header-btn logout-btn" onclick="window.location.href='./login.html'">Déconnexion</button>
+
+    <!-- Bouton admin affiché dynamiquement -->
+    <button class="header-btn" id="admin-btn" style="display:none;" onclick="window.location.href='./admin.html'">
+      Admin
+    </button>
+
+    <button class="header-btn logout-btn">Déconnexion</button>
   </div>
 </header>
 
-<h1>Historique des interventions</h1>
+<!-- 🔥 CONTENU -->
+<div class="container">
 
-<table>
-  <thead>
-    <tr>
-      <th>Date</th>
-      <th>Heure</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody id="history-table"></tbody>
-</table>
+  <h2 style="text-align:center;">Historique des interventions</h2>
 
-<canvas id="chart" width="400" height="200"></canvas>
+  <!-- TABLEAU -->
+  <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Heure</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="history-table"></tbody>
+  </table>
 
+  <!-- GRAPHIQUE -->
+  <canvas id="chart" style="margin-top:40px;"></canvas>
+
+</div>
+
+<!-- 🔥 LIBRAIRIES CHART.JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-<script type="module" src="js/historique.js"></script>
+
+<!-- 🔥 SCRIPT HISTORIQUE -->
+<script type="module" src="./js/historique.js"></script>
 
 </body>
 </html>
