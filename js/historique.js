@@ -2,11 +2,22 @@ import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const table = document.getElementById("history-table");
-const chartCanvas = document.getElementById("chart");
-
+let table;
+let chartCanvas;
+let currentChart = null;
 let userId = null;
 
+// ---------------------------------------------------------
+// 🔥 Attendre que le DOM soit prêt
+// ---------------------------------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+  table = document.getElementById("history-table");
+  chartCanvas = document.getElementById("chart");
+});
+
+// ---------------------------------------------------------
+// 🔥 Vérification utilisateur
+// ---------------------------------------------------------
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -21,6 +32,8 @@ onAuthStateChanged(auth, async (user) => {
 // 🔥 Charger l’historique
 // ---------------------------------------------------------
 async function loadHistory() {
+  if (!table) return;
+
   const q = query(
     collection(db, "users", userId, "history"),
     orderBy("timestamp", "asc")
@@ -30,14 +43,14 @@ async function loadHistory() {
 
   table.innerHTML = "";
 
-  // 🔥 Compteur par véhicule
-  const vehicleCounts = {}; // { "VSAV 1": 4, "FPT": 2 }
+  const vehicleCounts = {};
 
   snapshot.forEach((docu) => {
     const data = docu.data();
+
+    if (!data.timestamp) return; // sécurité
     const date = data.timestamp.toDate();
 
-    // Tableau
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${date.toLocaleDateString()}</td>
@@ -46,51 +59,66 @@ async function loadHistory() {
     `;
     table.appendChild(row);
 
-    // Compter par véhicule
     if (!vehicleCounts[data.vehicleName]) {
       vehicleCounts[data.vehicleName] = 0;
     }
-    vehicleCounts[data.vehicleName] += 1;
+    vehicleCounts[data.vehicleName]++;
   });
 
   drawChart(vehicleCounts);
 }
 
 // ---------------------------------------------------------
-// 🔥 Nouveau graphique DONUT premium
+// 🔥 Graphique DONUT premium
 // ---------------------------------------------------------
 function drawChart(vehicleCounts) {
+  if (!chartCanvas) return;
+
   const labels = Object.keys(vehicleCounts);
   const values = Object.values(vehicleCounts);
+
+  if (labels.length === 0) {
+    chartCanvas.style.display = "none";
+    return;
+  }
+
+  chartCanvas.style.display = "block";
 
   const total = values.reduce((a, b) => a + b, 0);
 
   const ctx = chartCanvas.getContext("2d");
 
-  // 🔥 Charger ton logo
+  // 🔥 Détruire l’ancien graphique si présent
+  if (currentChart) {
+    currentChart.destroy();
+  }
+
+  // 🔥 Charger le logo une seule fois
   const centerImage = new Image();
-  centerImage.src = "./img/monimage.png";
+  centerImage.src = "./monimage.png";
 
-  new Chart(chartCanvas, {
+  currentChart = new Chart(chartCanvas, {
     type: "doughnut",
-    plugins: [ChartDataLabels, {
-      // 🔥 Plugin custom pour dessiner l’image au centre
-      id: "centerImagePlugin",
-      afterDraw(chart) {
-        const { ctx, chartArea: { width, height } } = chart;
+    plugins: [
+      ChartDataLabels,
+      {
+        id: "centerImagePlugin",
+        afterDraw(chart) {
+          const { ctx, chartArea: { width, height } } = chart;
 
-        const imgSize = Math.min(width, height) * 0.35; // taille du logo
-        const x = chart.getDatasetMeta(0).data[0].x - imgSize / 2;
-        const y = chart.getDatasetMeta(0).data[0].y - imgSize / 2;
+          const imgSize = Math.min(width, height) * 0.35;
+          const x = chart.getDatasetMeta(0).data[0].x - imgSize / 2;
+          const y = chart.getDatasetMeta(0).data[0].y - imgSize / 2;
 
-        ctx.save();
-        ctx.globalAlpha = 0.9;
-        ctx.drawImage(centerImage, x, y, imgSize, imgSize);
-        ctx.restore();
+          ctx.save();
+          ctx.globalAlpha = 0.9;
+          ctx.drawImage(centerImage, x, y, imgSize, imgSize);
+          ctx.restore();
+        }
       }
-    }],
+    ],
     data: {
-      labels: labels,
+      labels,
       datasets: [{
         data: values,
         backgroundColor: [
@@ -105,7 +133,7 @@ function drawChart(vehicleCounts) {
       }]
     },
     options: {
-      cutout: "65%", // 🔥 trou plus grand pour laisser place au logo
+      cutout: "65%",
       plugins: {
         legend: {
           labels: { color: "white", font: { size: 14 } }
