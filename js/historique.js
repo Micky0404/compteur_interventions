@@ -67,18 +67,12 @@ function drawChart(vehicleCounts) {
 
   const ctx = chartCanvas.getContext("2d");
 
-  // Dégradé neon rouge
-  const gradient = ctx.createLinearGradient(0, 0, 300, 300);
-  gradient.addColorStop(0, "rgba(255, 50, 50, 1)");
-  gradient.addColorStop(1, "rgba(255, 0, 0, 0.4)");
-
   new Chart(chartCanvas, {
     type: "doughnut",
     plugins: [ChartDataLabels],
     data: {
       labels: labels,
       datasets: [{
-        label: "Sorties par véhicule",
         data: values,
         backgroundColor: [
           "rgba(255, 50, 50, 0.9)",
@@ -100,13 +94,17 @@ function drawChart(vehicleCounts) {
         datalabels: {
           color: "white",
           font: { weight: "bold", size: 14 },
-          formatter: (value) => {
+          align: "end",        // place le texte sous le pourcentage
+          anchor: "end",
+          offset: 8,           // espace entre % et nom
+          formatter: (value, ctx) => {
             const percent = (value / total) * 100;
-            return percent.toFixed(1) + "%";
+            const vehicleName = ctx.chart.data.labels[ctx.dataIndex];
+
+            return percent.toFixed(1) + "%\n" + vehicleName;
           }
         }
       }
     }
   });
 }
-
