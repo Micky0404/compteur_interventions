@@ -3,33 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion</title>
+    <title>Accueil</title>
     <link rel="stylesheet" href="./css/style.css">
 </head>
 
 <body>
 
-<!-- 🔥 HEADER PUBLIC (login) -->
+<!-- 🔥 HEADER PUBLIC -->
 <header class="neo-header">
     <div class="header-left">
-        <h1 class="app-title">Connexion</h1>
+        <h1 class="app-title">Compteur d'interventions</h1>
     </div>
 
     <div class="header-right">
+        <button class="header-btn" onclick="window.location.href='./login.html'">Connexion</button>
         <button class="header-btn" onclick="window.location.href='./register.html'">Créer un compte</button>
     </div>
 </header>
 
-<!-- 🔥 CONTENU -->
-<div class="container">
-    <h2>Se connecter</h2>
+<!-- 🔥 CONTENU ACCUEIL -->
+<div class="container" style="text-align:center; padding:50px 20px;">
 
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Mot de passe">
+    <h2>Bienvenue sur votre application</h2>
+    <p style="font-size:18px; margin-top:15px;">
+        Gérez vos véhicules, vos sorties, votre historique et vos statistiques
+        dans une interface moderne, rapide et sécurisée.
+    </p>
 
-    <button id="login-btn">Connexion</button>
+    <img src="./monimage.png" alt="Logo" style="
+        width:150px;
+        margin:30px auto;
+        display:block;
+        filter: drop-shadow(0 0 15px #ff1a1a);
+    ">
+
+    <button class="btn-primary" style="margin-top:20px;" onclick="window.location.href='./login.html'">
+        Se connecter
+    </button>
+
+    <button class="btn-secondary" style="margin-top:15px;" onclick="window.location.href='./register.html'">
+        Créer un compte
+    </button>
+
 </div>
 
-<script type="module" src="./js/auth.js"></script>
 </body>
 </html>
