@@ -5,16 +5,16 @@ console.log("AUTH.JS CHARGÉ !");
 // ---------------------------------------------------------
 import { auth, db } from "./firebase-config.js";
 
-import { 
-  createUserWithEmailAndPassword, 
+import {
+  createUserWithEmailAndPassword,
   signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-import { 
-  doc, 
-  setDoc, 
+import {
+  doc,
+  setDoc,
   getDoc,
-  serverTimestamp 
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 
@@ -24,12 +24,11 @@ import {
 document.addEventListener("DOMContentLoaded", () => {
   const loginBtn    = document.getElementById("login-btn");
   const registerBtn = document.getElementById("register-btn");
+  const goLoginBtn  = document.getElementById("goLoginBtn");
 
-  if (loginBtn) loginBtn.addEventListener("click", login);
+  if (loginBtn)    loginBtn.addEventListener("click", login);
   if (registerBtn) registerBtn.addEventListener("click", registerUser);
 
-  // 🔥 Bouton "Déjà un compte ? Se connecter"
-  const goLoginBtn = document.getElementById("goLoginBtn");
   if (goLoginBtn) {
     goLoginBtn.addEventListener("click", () => {
       window.location.href = "./login.html";
@@ -52,15 +51,16 @@ async function registerUser() {
   }
 
   try {
+    // Création du compte Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // 🔥 Création Firestore avec validation désactivée
+    // Création du document Firestore
     await setDoc(doc(db, "users", user.uid), {
       pseudo: pseudo,
       email: email,
       role: "user",
-      validated: false,
+      validated: false, // 🔥 Admin doit valider
       interventions: 0,
       createdAt: serverTimestamp()
     });
@@ -69,6 +69,7 @@ async function registerUser() {
     window.location.href = "./login.html";
 
   } catch (error) {
+    console.error("Erreur inscription :", error);
     alert("Erreur : " + error.message);
   }
 }
@@ -88,9 +89,11 @@ async function login() {
   }
 
   try {
+    // Connexion Firebase Auth
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
+    // Récupération du document Firestore
     const userDoc = await getDoc(doc(db, "users", user.uid));
 
     if (!userDoc.exists()) {
@@ -106,10 +109,11 @@ async function login() {
       return;
     }
 
-    // 🔥 Redirection pour TOUS les utilisateurs (admin ou non)
+    // 🔥 Redirection unique pour tous les utilisateurs
     window.location.href = "./compteur.html";
 
   } catch (error) {
+    console.error("Erreur connexion :", error);
     alert("Erreur de connexion : " + error.message);
   }
 }
