@@ -28,52 +28,81 @@ async function loadHistory() {
 
   const snapshot = await getDocs(q);
 
-  const labels = [];
-  const values = [];
-
   table.innerHTML = "";
+
+  // 🔥 Structure pour le graphique
+  const vehicleCounts = {};   // { "VSAV 1": 4, "FPT": 2 }
+  const labels = [];          // Dates
+  const values = [];          // Nombre total par date
 
   snapshot.forEach((docu) => {
     const data = docu.data();
     const date = data.timestamp.toDate();
+    const dateStr = date.toLocaleDateString();
 
-    // Tableau
+    // 🔥 Tableau
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td>${date.toLocaleDateString()}</td>
+      <td>${dateStr}</td>
       <td>${date.toLocaleTimeString()}</td>
-      <td>+1 intervention</td>
+      <td>${data.vehicleName} — +1 sortie</td>
     `;
     table.appendChild(row);
 
-    // Graphique
-    labels.push(date.toLocaleDateString());
-    values.push(1);
+    // 🔥 Compter par véhicule
+    if (!vehicleCounts[data.vehicleName]) {
+      vehicleCounts[data.vehicleName] = 0;
+    }
+    vehicleCounts[data.vehicleName] += 1;
   });
 
-  drawChart(labels, values);
+  drawChart(vehicleCounts);
 }
 
 // ---------------------------------------------------------
-// 🔥 Graphique Chart.js
+// 🔥 Nouveau graphique premium
 // ---------------------------------------------------------
-function drawChart(labels, values) {
+function drawChart(vehicleCounts) {
+  const labels = Object.keys(vehicleCounts);
+  const values = Object.values(vehicleCounts);
+
+  // Dégradé rouge neon
+  const ctx = chartCanvas.getContext("2d");
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+  gradient.addColorStop(0, "rgba(255, 50, 50, 0.9)");
+  gradient.addColorStop(1, "rgba(255, 0, 0, 0.3)");
+
   new Chart(chartCanvas, {
-    type: "line",
+    type: "bar",
     data: {
       labels: labels,
       datasets: [{
-        label: "Interventions",
+        label: "Sorties par véhicule",
         data: values,
-        borderColor: "#ff2a2a",
-        backgroundColor: "rgba(255,42,42,0.3)",
+        backgroundColor: gradient,
+        borderColor: "#ff1a1a",
         borderWidth: 2,
-        tension: 0.3
+        borderRadius: 10,
+        hoverBackgroundColor: "rgba(255, 80, 80, 1)"
       }]
     },
     options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: { color: "white" }
+        }
+      },
       scales: {
-        y: { beginAtZero: true }
+        x: {
+          ticks: { color: "white" },
+          grid: { color: "rgba(255,255,255,0.1)" }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: "white" },
+          grid: { color: "rgba(255,255,255,0.1)" }
+        }
       }
     }
   });
