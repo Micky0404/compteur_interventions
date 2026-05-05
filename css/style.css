@@ -80,10 +80,10 @@ button:hover {
 
 .vehicle-card img {
   width: 100%;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: 0.2s;
+  height: auto;
+  border-radius: 10px;
 }
+
 
 .vehicle-card img:hover {
   box-shadow: 0 0 20px rgba(255,0,0,0.6);
