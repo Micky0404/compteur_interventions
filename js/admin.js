@@ -71,7 +71,11 @@ async function loadUsers() {
 
     card.innerHTML = `
       <h3>${user.pseudo} (${user.email})</h3>
-      <p>Validé : <strong>${user.validated ? "Oui" : "Non"}</strong></p>
+      <p>Validé : 
+        <strong style="color:${user.validated ? "lime" : "red"};">
+          ${user.validated ? "Oui" : "Non"}
+        </strong>
+      </p>
 
       <button class="validateBtn" data-id="${userDoc.id}">
         ${user.validated ? "Désactiver" : "Valider"}
@@ -137,18 +141,4 @@ async function loadVehicles(uid) {
 // 🔥 ADMIN : INCRÉMENTER SORTIES D’UN VÉHICULE
 // ---------------------------------------------------------
 async function incrementVehicle(uid, vehicleId) {
-  const ref = doc(db, "users", uid, "vehicles", vehicleId);
-  const snap = await getDoc(ref);
-
-  if (!snap.exists()) return;
-
-  await updateDoc(ref, { sorties: snap.data().sorties + 1 });
-
-  loadVehicles(uid);
-}
-
-
-// ---------------------------------------------------------
-// 🔥 ADMIN : VALIDER / DÉSACTIVER UN UTILISATEUR
-// ---------------------------------------------------------
-async function toggleValidation
+  const ref = doc(db, "users",
