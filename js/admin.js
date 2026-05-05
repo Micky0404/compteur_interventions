@@ -40,7 +40,7 @@ onAuthStateChanged(auth, async (user) => {
 
   if (data.role !== "admin") {
     alert("Accès refusé.");
-    window.location.href = "./index.html";
+    window.location.href = "./compteur.html";
     return;
   }
 
@@ -55,33 +55,36 @@ onAuthStateChanged(auth, async (user) => {
 // ---------------------------------------------------------
 async function loadUsers() {
   const list = document.getElementById("userList");
+  if (!list) return;
+
   list.innerHTML = "<p>Chargement...</p>";
 
   const usersSnap = await getDocs(collection(db, "users"));
 
-  let html = "";
+  list.innerHTML = ""; // reset propre
 
   usersSnap.forEach((userDoc) => {
     const user = userDoc.data();
 
-    html += `
-      <div class="vehicle-card">
-        <h3>${user.pseudo} (${user.email})</h3>
-        <p>Validé : <strong>${user.validated ? "Oui" : "Non"}</strong></p>
+    const card = document.createElement("div");
+    card.className = "vehicle-card";
 
-        <button class="validateBtn" data-id="${userDoc.id}">
-          ${user.validated ? "Désactiver" : "Valider"}
-        </button>
+    card.innerHTML = `
+      <h3>${user.pseudo} (${user.email})</h3>
+      <p>Validé : <strong>${user.validated ? "Oui" : "Non"}</strong></p>
 
-        <h3>Véhicules :</h3>
-        <div id="vehicles-${userDoc.id}">Chargement...</div>
-      </div>
+      <button class="validateBtn" data-id="${userDoc.id}">
+        ${user.validated ? "Désactiver" : "Valider"}
+      </button>
+
+      <h3>Véhicules :</h3>
+      <div id="vehicles-${userDoc.id}">Chargement...</div>
     `;
+
+    list.appendChild(card);
 
     loadVehicles(userDoc.id);
   });
-
-  list.innerHTML = html;
 
   // Activation des boutons valider/désactiver
   document.querySelectorAll(".validateBtn").forEach(btn => {
@@ -95,6 +98,8 @@ async function loadUsers() {
 // ---------------------------------------------------------
 async function loadVehicles(uid) {
   const container = document.getElementById(`vehicles-${uid}`);
+  if (!container) return;
+
   container.innerHTML = "<p>Chargement...</p>";
 
   const snap = await getDocs(collection(db, "users", uid, "vehicles"));
@@ -104,21 +109,22 @@ async function loadVehicles(uid) {
     return;
   }
 
-  let html = "";
+  container.innerHTML = ""; // reset propre
 
   snap.forEach(docu => {
     const v = docu.data();
 
-    html += `
-      <div class="vehicle-card">
-        <h4>${v.name}</h4>
-        <img src="${v.imageUrl}" data-uid="${uid}" data-id="${docu.id}">
-        <p>Sorties : <strong>${v.sorties}</strong></p>
-      </div>
-    `;
-  });
+    const card = document.createElement("div");
+    card.className = "vehicle-card";
 
-  container.innerHTML = html;
+    card.innerHTML = `
+      <h4>${v.name}</h4>
+      <img src="${v.imageUrl}" data-uid="${uid}" data-id="${docu.id}">
+      <p>Sorties : <strong>${v.sorties}</strong></p>
+    `;
+
+    container.appendChild(card);
+  });
 
   // Double clic admin → sorties++
   container.querySelectorAll("img").forEach(img => {
@@ -134,6 +140,8 @@ async function incrementVehicle(uid, vehicleId) {
   const ref = doc(db, "users", uid, "vehicles", vehicleId);
   const snap = await getDoc(ref);
 
+  if (!snap.exists()) return;
+
   await updateDoc(ref, { sorties: snap.data().sorties + 1 });
 
   loadVehicles(uid);
@@ -143,11 +151,4 @@ async function incrementVehicle(uid, vehicleId) {
 // ---------------------------------------------------------
 // 🔥 ADMIN : VALIDER / DÉSACTIVER UN UTILISATEUR
 // ---------------------------------------------------------
-async function toggleValidation(uid) {
-  const ref = doc(db, "users", uid);
-  const snap = await getDoc(ref);
-
-  await updateDoc(ref, { validated: !snap.data().validated });
-
-  loadUsers();
-}
+async function toggleValidation
