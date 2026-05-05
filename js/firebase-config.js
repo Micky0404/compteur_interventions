@@ -1,12 +1,12 @@
 // ---------------------------------------------------------
-// 🔥 CONFIGURATION FIREBASE (GITHUB PAGES COMPATIBLE)
+// 🔥 CONFIGURATION FIREBASE (COMPATIBLE GITHUB PAGES)
 // ---------------------------------------------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ---------------------------------------------------------
-// 🔥 CONFIG DE TON PROJET
+// 🔥 CONFIGURATION DU PROJET FIREBASE
 // ---------------------------------------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyCfOwjVhiVm9wyR3RTRzOz-15q8ojDESLQ",
@@ -18,7 +18,7 @@ const firebaseConfig = {
 };
 
 // ---------------------------------------------------------
-// 🔥 INITIALISATION
+// 🔥 INITIALISATION FIREBASE
 // ---------------------------------------------------------
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
