@@ -51,14 +51,16 @@ async function loadHistory() {
     if (!data.timestamp) return; // sécurité
     const date = data.timestamp.toDate();
 
+    // 🔥 Ligne du tableau : on affiche seulement le nom du véhicule
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${date.toLocaleDateString()}</td>
       <td>${date.toLocaleTimeString()}</td>
-      <td>${data.vehicleName} — +1 sortie</td>
+      <td>${data.vehicleName}</td>
     `;
     table.appendChild(row);
 
+    // 🔥 Comptage pour le graphique
     if (!vehicleCounts[data.vehicleName]) {
       vehicleCounts[data.vehicleName] = 0;
     }
