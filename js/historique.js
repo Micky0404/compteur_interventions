@@ -67,9 +67,28 @@ function drawChart(vehicleCounts) {
 
   const ctx = chartCanvas.getContext("2d");
 
+  // 🔥 Charger ton logo
+  const centerImage = new Image();
+  centerImage.src = "./img/monimage.png";
+
   new Chart(chartCanvas, {
     type: "doughnut",
-    plugins: [ChartDataLabels],
+    plugins: [ChartDataLabels, {
+      // 🔥 Plugin custom pour dessiner l’image au centre
+      id: "centerImagePlugin",
+      afterDraw(chart) {
+        const { ctx, chartArea: { width, height } } = chart;
+
+        const imgSize = Math.min(width, height) * 0.35; // taille du logo
+        const x = chart.getDatasetMeta(0).data[0].x - imgSize / 2;
+        const y = chart.getDatasetMeta(0).data[0].y - imgSize / 2;
+
+        ctx.save();
+        ctx.globalAlpha = 0.9;
+        ctx.drawImage(centerImage, x, y, imgSize, imgSize);
+        ctx.restore();
+      }
+    }],
     data: {
       labels: labels,
       datasets: [{
@@ -86,7 +105,7 @@ function drawChart(vehicleCounts) {
       }]
     },
     options: {
-      cutout: "60%",
+      cutout: "65%", // 🔥 trou plus grand pour laisser place au logo
       plugins: {
         legend: {
           labels: { color: "white", font: { size: 14 } }
@@ -94,13 +113,12 @@ function drawChart(vehicleCounts) {
         datalabels: {
           color: "white",
           font: { weight: "bold", size: 14 },
-          align: "end",        // place le texte sous le pourcentage
+          align: "end",
           anchor: "end",
-          offset: 8,           // espace entre % et nom
+          offset: 8,
           formatter: (value, ctx) => {
             const percent = (value / total) * 100;
             const vehicleName = ctx.chart.data.labels[ctx.dataIndex];
-
             return percent.toFixed(1) + "%\n" + vehicleName;
           }
         }
