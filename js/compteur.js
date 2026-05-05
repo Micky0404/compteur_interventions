@@ -72,6 +72,7 @@ async function loadVehicles() {
       <p>Sorties : <strong>${v.sorties}</strong></p>
 
       <button class="add-sortie-btn" data-id="${docu.id}">+1 sortie</button>
+      <button class="edit-btn" data-id="${docu.id}">Modifier</button>
       <button class="delete-vehicle-btn" data-id="${docu.id}">Supprimer</button>
     `;
 
@@ -90,7 +91,38 @@ async function loadVehicles() {
   document.querySelectorAll(".vehicle-card img").forEach(img => {
     img.addEventListener("dblclick", () => incrementVehicle(img.dataset.id));
   });
+
+  // 🔥 Listener pour bouton Modifier
+  document.querySelectorAll(".edit-btn").forEach(btn => {
+    btn.addEventListener("click", () => openEditModal(btn.dataset.id));
+  });
 }
+
+
+// ---------------------------------------------------------
+// 🔥 MODIFIER LE NOM D’UN VÉHICULE
+// ---------------------------------------------------------
+let vehicleToEdit = null;
+
+function openEditModal(id) {
+  vehicleToEdit = id;
+  document.getElementById("editModal").style.display = "flex";
+}
+
+document.getElementById("saveEditBtn").addEventListener("click", async () => {
+  const newName = document.getElementById("editVehicleName").value.trim();
+  if (newName === "") return;
+
+  const user = auth.currentUser;
+  const ref = doc(db, "users", user.uid, "vehicles", vehicleToEdit);
+
+  await updateDoc(ref, { name: newName });
+
+  document.getElementById("editModal").style.display = "none";
+  document.getElementById("editVehicleName").value = "";
+
+  loadVehicles();
+});
 
 
 // ---------------------------------------------------------
@@ -128,7 +160,6 @@ async function saveVehicle() {
     createdAt: serverTimestamp()
   });
 
-  // Reset photo
   window.capturedPhoto = null;
   document.getElementById("photoPreview").style.display = "none";
 
