@@ -75,10 +75,8 @@ async function registerUser() {
   }
 }
 
-
-
 // ---------------------------------------------------------
-// 🔥 CONNEXION (bloque si non validé + redirection selon rôle)
+// 🔥 CONNEXION (bloque si non validé + redirection vers compteur)
 // ---------------------------------------------------------
 async function login() {
   const email    = document.getElementById("email")?.value.trim();
@@ -110,13 +108,7 @@ async function login() {
       return;
     }
 
-    // 🔥 Redirection admin
-    if (userData.role === "admin" || userData.isAdmin === true) {
-      window.location.href = "./admin.html";
-      return;
-    }
-
-    // 🔥 Redirection utilisateur normal
+    // 🔥 ADMIN OU UTILISATEUR NORMAL → direction compteur
     window.location.href = "./compteur.html";
 
   } catch (error) {
@@ -124,3 +116,5 @@ async function login() {
     alert("Erreur de connexion : " + error.message);
   }
 }
+
+
