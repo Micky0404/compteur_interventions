@@ -1,6 +1,6 @@
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { collection, getDocs, orderBy, query, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 let table;
 let chartCanvas;
@@ -24,8 +24,32 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  userId = user.uid;
-  loadHistory();
+  try {
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      alert("Erreur : utilisateur introuvable.");
+      await auth.signOut();
+      return;
+    }
+
+    const data = snap.data();
+
+    // 🔥 Bloquer si non validé
+    if (!data.validated) {
+      alert("Votre compte n'est pas encore validé.");
+      await auth.signOut();
+      return;
+    }
+
+    userId = user.uid;
+    loadHistory();
+
+  } catch (error) {
+    console.error("Erreur auth :", error);
+    alert("Erreur interne.");
+  }
 });
 
 // ---------------------------------------------------------
@@ -34,40 +58,44 @@ onAuthStateChanged(auth, async (user) => {
 async function loadHistory() {
   if (!table) return;
 
-  const q = query(
-    collection(db, "users", userId, "history"),
-    orderBy("timestamp", "asc")
-  );
+  try {
+    const q = query(
+      collection(db, "users", userId, "history"),
+      orderBy("timestamp", "asc")
+    );
 
-  const snapshot = await getDocs(q);
+    const snapshot = await getDocs(q);
 
-  table.innerHTML = "";
+    table.innerHTML = "";
 
-  const vehicleCounts = {};
+    const vehicleCounts = {};
 
-  snapshot.forEach((docu) => {
-    const data = docu.data();
+    snapshot.forEach((docu) => {
+      const data = docu.data();
 
-    if (!data.timestamp) return; // sécurité
-    const date = data.timestamp.toDate();
+      if (!data.timestamp) return;
+      const date = data.timestamp.toDate();
 
-    // 🔥 Ligne du tableau : on affiche seulement le nom du véhicule
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${date.toLocaleDateString()}</td>
-      <td>${date.toLocaleTimeString()}</td>
-      <td>${data.vehicleName}</td>
-    `;
-    table.appendChild(row);
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${date.toLocaleDateString()}</td>
+        <td>${date.toLocaleTimeString()}</td>
+        <td>${data.vehicleName}</td>
+      `;
+      table.appendChild(row);
 
-    // 🔥 Comptage pour le graphique
-    if (!vehicleCounts[data.vehicleName]) {
-      vehicleCounts[data.vehicleName] = 0;
-    }
-    vehicleCounts[data.vehicleName]++;
-  });
+      if (!vehicleCounts[data.vehicleName]) {
+        vehicleCounts[data.vehicleName] = 0;
+      }
+      vehicleCounts[data.vehicleName]++;
+    });
 
-  drawChart(vehicleCounts);
+    drawChart(vehicleCounts);
+
+  } catch (error) {
+    console.error("Erreur chargement historique :", error);
+    table.innerHTML = "<tr><td colspan='3'>Erreur lors du chargement.</td></tr>";
+  }
 }
 
 // ---------------------------------------------------------
@@ -87,15 +115,12 @@ function drawChart(vehicleCounts) {
   chartCanvas.style.display = "block";
 
   const total = values.reduce((a, b) => a + b, 0);
-
   const ctx = chartCanvas.getContext("2d");
 
-  // 🔥 Détruire l’ancien graphique si présent
   if (currentChart) {
     currentChart.destroy();
   }
 
-  // 🔥 Charger le logo une seule fois
   const centerImage = new Image();
   centerImage.src = "./monimage.png";
 
@@ -106,6 +131,8 @@ function drawChart(vehicleCounts) {
       {
         id: "centerImagePlugin",
         afterDraw(chart) {
+          if (!centerImage.complete) return;
+
           const { ctx, chartArea: { width, height } } = chart;
 
           const imgSize = Math.min(width, height) * 0.35;
