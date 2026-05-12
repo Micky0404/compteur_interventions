@@ -40,6 +40,11 @@ auth.onAuthStateChanged(async (user) => {
       return;
     }
 
+    // 🔥 Redirection admin → compteur.html (comme demandé)
+    if (data.role === "admin" || data.isAdmin === true) {
+      console.log("Admin détecté → accès compteur OK");
+    }
+
     // Affichage pseudo
     const pseudoSpan = document.getElementById("pseudo");
     if (pseudoSpan) pseudoSpan.textContent = data.pseudo;
@@ -229,4 +234,50 @@ if (cameraInput) {
 // ---------------------------------------------------------
 // 🔥 INCRÉMENTER SORTIES + HISTORIQUE
 // ---------------------------------------------------------
-async function incrementVehicle
+async function incrementVehicle(vehicleId) {
+  try {
+    const user = auth.currentUser;
+    const ref = doc(db, "users", user.uid, "vehicles", vehicleId);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) return;
+
+    const current = snap.data().sorties;
+
+    await updateDoc(ref, {
+      sorties: current + 1
+    });
+
+    loadVehicles();
+
+  } catch (error) {
+    console.error("Erreur increment :", error);
+  }
+}
+
+
+// ---------------------------------------------------------
+// 🔥 SUPPRIMER UN VÉHICULE
+// ---------------------------------------------------------
+async function deleteVehicle(id) {
+  if (!confirm("Supprimer ce véhicule ?")) return;
+
+  try {
+    const user = auth.currentUser;
+    await deleteDoc(doc(db, "users", user.uid, "vehicles", id));
+
+    loadVehicles();
+
+  } catch (error) {
+    console.error("Erreur suppression véhicule :", error);
+  }
+}
+
+
+// ---------------------------------------------------------
+// 🔧 BASE64
+// ---------------------------------------------------------
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve
