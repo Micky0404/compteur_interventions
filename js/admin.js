@@ -39,8 +39,10 @@ onAuthStateChanged(auth, async (user) => {
 
     const data = snap.data();
 
-    // 🔥 Double sécurité : role + isAdmin
-    if (data.role !== "admin" && data.isAdmin !== true) {
+    // 🔥 Sécurité propre : admin = role OU isAdmin
+    const isAdmin = data.role === "admin" || data.isAdmin === true;
+
+    if (!isAdmin) {
       alert("Accès refusé.");
       window.location.href = "./compteur.html";
       return;
@@ -197,3 +199,12 @@ async function toggleValidation(uid) {
     console.error("Erreur validation :", error);
   }
 }
+
+
+// ---------------------------------------------------------
+// 🔥 DÉCONNEXION (manquante → ajoutée)
+// ---------------------------------------------------------
+document.querySelector(".logout-btn").addEventListener("click", async () => {
+  await auth.signOut();
+  window.location.href = "./login.html";
+});
