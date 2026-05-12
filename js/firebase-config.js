@@ -1,25 +1,16 @@
-// ---------------------------------------------------------
-// 🔥 CONFIGURATION FIREBASE (COMPATIBLE GITHUB PAGES)
-// ---------------------------------------------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ---------------------------------------------------------
-// 🔥 CONFIGURATION DU PROJET FIREBASE
-// ---------------------------------------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyCfOwjVhiVm9wyR3RTRzOz-15q8ojDESLQ",
   authDomain: "compteur-d-interventions-80d5e.firebaseapp.com",
   projectId: "compteur-d-interventions-80d5e",
-  storageBucket: "compteur-d-interventions-80d5e.firebasestorage.app",
+  storageBucket: "compteur-d-interventions-80d5e.appspot.com",
   messagingSenderId: "984885064903",
   appId: "1:984885064903:web:f971697b57d82f28647ae2"
 };
 
-// ---------------------------------------------------------
-// 🔥 INITIALISATION FIREBASE
-// ---------------------------------------------------------
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
