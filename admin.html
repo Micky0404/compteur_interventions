@@ -24,20 +24,18 @@
 <!-- 🔥 CONTENU ADMIN -->
 <div class="container">
 
-  <h1>Dashboard Administrateur</h1>
+  <h2>Dashboard Administrateur</h2>
   <p>Gestion complète des utilisateurs et validation des accès</p>
 
-  <h2>Liste des utilisateurs</h2>
+  <h3>Liste des utilisateurs</h3>
 
   <!-- Liste générée par admin.js -->
   <div id="userList" class="admin-list"></div>
 
 </div>
 
-<!-- 🔥 SCRIPT ADMIN -->
-<script type="module" src="./js/admin.js?v=1"></script>
-
-  <div id="stats-container">
+<!-- 🔥 STATISTIQUES ADMIN -->
+<div id="stats-container">
 
   <div class="stat-card">
     <h3>Total utilisateurs</h3>
@@ -61,10 +59,12 @@
 
 </div>
 
+<!-- 🔥 GRAPHIQUE TOP VÉHICULES -->
 <canvas id="topVehiclesChart"></canvas>
 
-<script src="admin-stats.js" type="module"></script>
+<!-- 🔥 SCRIPTS -->
+<script type="module" src="./js/admin.js?v=1"></script>
+<script type="module" src="./admin-stats.js"></script>
 
-  
 </body>
 </html>
