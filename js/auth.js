@@ -59,8 +59,9 @@ async function registerUser() {
     await setDoc(doc(db, "users", user.uid), {
       pseudo: pseudo,
       email: email,
-      role: "user",
-      validated: false, // 🔥 Admin doit valider
+      role: "user",       // 🔥 rôle par défaut
+      isAdmin: false,     // 🔥 simplifie les checks
+      validated: false,   // 🔥 admin doit valider
       interventions: 0,
       createdAt: serverTimestamp()
     });
@@ -77,7 +78,7 @@ async function registerUser() {
 
 
 // ---------------------------------------------------------
-// 🔥 CONNEXION (bloque si non validé)
+// 🔥 CONNEXION (bloque si non validé + redirection selon rôle)
 // ---------------------------------------------------------
 async function login() {
   const email    = document.getElementById("email")?.value.trim();
@@ -109,7 +110,13 @@ async function login() {
       return;
     }
 
-    // 🔥 Redirection unique pour tous les utilisateurs
+    // 🔥 Redirection admin
+    if (userData.role === "admin" || userData.isAdmin === true) {
+      window.location.href = "./admin.html";
+      return;
+    }
+
+    // 🔥 Redirection utilisateur normal
     window.location.href = "./compteur.html";
 
   } catch (error) {
