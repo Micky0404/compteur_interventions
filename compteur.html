@@ -9,18 +9,20 @@
 
 <body>
 
-<!-- 🔥 HEADER ULTRA STYLÉ (version privée) -->
+<!-- 🔥 HEADER PRIVÉ -->
 <header class="neo-header">
+
   <div class="header-right">
 
     <!-- Bouton Historique -->
     <button class="header-btn" onclick="window.location.href='./historique.html'">
-        Historique
+      Historique
     </button>
 
-    <!-- Bouton admin affiché dynamiquement par JS -->
-    <button class="header-btn" id="admin-btn" style="display:none;" onclick="window.location.href='./admin.html'">
-        Admin
+    <!-- Bouton admin (affiché par JS si admin) -->
+    <button class="header-btn" id="admin-btn" style="display:none;"
+            onclick="window.location.href='./admin.html'">
+      Admin
     </button>
 
     <!-- Déconnexion -->
@@ -28,6 +30,7 @@
 
   </div>
 </header>
+
 
 <!-- 🔥 CONTENU PRINCIPAL -->
 <div class="container">
@@ -44,21 +47,25 @@
 
 </div>
 
+
 <!-- 🔥 MODALE AJOUT VEHICULE -->
 <div class="modal" id="vehicleModal">
   <div class="modal-content">
+
     <h2>Ajouter un véhicule</h2>
 
     <input type="text" id="vehicleName" placeholder="Nom du véhicule">
 
     <br><br>
 
+    <!-- Photo via caméra -->
     <button id="takePhotoBtn">Prendre une photo</button>
     <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
     <img id="photoPreview" style="max-width:200px; margin-top:10px; display:none;">
 
     <br><br>
 
+    <!-- Upload classique -->
     <input type="file" id="uploadImage" accept="image/*">
 
     <br><br>
@@ -66,12 +73,15 @@
     <button id="saveVehicleBtn" class="primary-btn">
       Enregistrer
     </button>
+
   </div>
 </div>
+
 
 <!-- 🔥 MODALE MODIFICATION NOM VÉHICULE -->
 <div class="modal" id="editModal">
   <div class="modal-content">
+
     <h2>Modifier le nom du véhicule</h2>
 
     <input type="text" id="editVehicleName" placeholder="Nouveau nom">
@@ -81,8 +91,10 @@
     <button id="saveEditBtn" class="primary-btn">
       Enregistrer
     </button>
+
   </div>
 </div>
+
 
 <!-- 🔥 SCRIPT -->
 <script type="module" src="./js/compteur.js"></script>
