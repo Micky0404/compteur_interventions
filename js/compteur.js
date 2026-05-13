@@ -40,9 +40,11 @@ const openCameraBtn = document.getElementById("openCameraBtn");
 const cameraPreview = document.getElementById("cameraPreview");
 
 let currentEditId = null;
+let currentOwnerId = null;
 let cameraStream = null;
 let capturedImage = null;
 let userId = null;
+let isAdmin = false;
 
 
 // ---------------------------------------------------------
@@ -67,108 +69,3 @@ onAuthStateChanged(auth, async (user) => {
 
   const data = snap.data();
 
-  // 🔥 Bloquer si non validé
-  if (!data.validated) {
-    alert("Votre compte n'est pas encore validé.");
-    await signOut(auth);
-    return;
-  }
-
-  // 🔥 Afficher bouton admin si nécessaire
-  if (data.role === "admin" || data.isAdmin === true) {
-    document.getElementById("admin-btn").style.display = "block";
-  }
-
-  document.getElementById("user-title").textContent = `Véhicules de ${data.pseudo}`;
-
-  loadVehicles();
-});
-
-
-// ---------------------------------------------------------
-// 🔥 CHARGER LES VÉHICULES
-// ---------------------------------------------------------
-async function loadVehicles() {
-  vehicleList.innerHTML = "<p>Chargement...</p>";
-
-  const snap = await getDocs(collection(db, "users", userId, "vehicles"));
-
-  if (snap.empty) {
-    vehicleList.innerHTML = "<p>Aucun véhicule pour le moment.</p>";
-    return;
-  }
-
-  vehicleList.innerHTML = "";
-
-  snap.forEach((docu) => {
-    const v = docu.data();
-
-    const card = document.createElement("div");
-    card.className = "vehicle-card";
-
-    card.innerHTML = `
-      <h3>${v.name}</h3>
-      <img src="${v.imageUrl}" data-id="${docu.id}">
-      <p>Sorties : <strong>${v.sorties}</strong></p>
-
-      <button class="btn-primary sortieBtn" data-id="${docu.id}">+1 sortie</button>
-      <button class="btn-secondary editBtn" data-id="${docu.id}" data-name="${v.name}">Modifier</button>
-      <button class="btn-danger deleteBtn" data-id="${docu.id}">Supprimer</button>
-    `;
-
-    vehicleList.appendChild(card);
-  });
-
-  // Boutons
-  document.querySelectorAll(".sortieBtn").forEach(btn =>
-    btn.addEventListener("click", () => incrementSortie(btn.dataset.id))
-  );
-
-  document.querySelectorAll(".editBtn").forEach(btn =>
-    btn.addEventListener("click", () => openEditModal(btn.dataset.id, btn.dataset.name))
-  );
-
-  document.querySelectorAll(".deleteBtn").forEach(btn =>
-    btn.addEventListener("click", () => deleteVehicle(btn.dataset.id))
-  );
-
-  // Double clic sur image = +1 sortie
-  document.querySelectorAll(".vehicle-card img").forEach(img =>
-    img.addEventListener("dblclick", () => incrementSortie(img.dataset.id))
-  );
-}
-
-
-// ---------------------------------------------------------
-// 🔥 AJOUT VÉHICULE
-// ---------------------------------------------------------
-addVehicleBtn.addEventListener("click", () => {
-  addModal.style.display = "flex";
-  capturedImage = null;
-});
-
-closeAddModal.addEventListener("click", () => {
-  addModal.style.display = "none";
-  stopCamera();
-});
-
-openCameraBtn.addEventListener("click", async () => {
-  cameraPreview.style.display = "block";
-
-  cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
-  cameraPreview.srcObject = cameraStream;
-
-  cameraPreview.addEventListener("click", () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = cameraPreview.videoWidth;
-    canvas.height = cameraPreview.videoHeight;
-
-    canvas.getContext("2d").drawImage(cameraPreview, 0, 0);
-    capturedImage = canvas.toDataURL("image/jpeg");
-
-    stopCamera();
-    cameraPreview.style.display = "none";
-  });
-});
-
-function stopCamera
