@@ -121,11 +121,10 @@ async function loadVehicles() {
 
 
 // ---------------------------------------------------------
-// 📸 GESTION PHOTO / UPLOAD POUR AJOUT
+// 📸 AJOUT — GESTION PHOTO
 // ---------------------------------------------------------
 let selectedImageFile = null;
 
-// Caméra
 document.getElementById("takePhotoBtn").addEventListener("click", () => {
   document.getElementById("cameraInput").click();
 });
@@ -135,13 +134,11 @@ document.getElementById("cameraInput").addEventListener("change", (e) => {
   previewImage(selectedImageFile);
 });
 
-// Upload classique
 document.getElementById("uploadImage").addEventListener("change", (e) => {
   selectedImageFile = e.target.files[0];
   previewImage(selectedImageFile);
 });
 
-// Preview
 function previewImage(file) {
   const preview = document.getElementById("photoPreview");
   preview.src = URL.createObjectURL(file);
@@ -151,6 +148,162 @@ function previewImage(file) {
 
 
 // ---------------------------------------------------------
-// 🔥 AJOUTER UN VÉHICULE AVEC PHOTO
+// 🔥 AJOUTER UN VÉHICULE
 // ---------------------------------------------------------
-document.getElementById("confirmAddVehicle
+document.getElementById("confirmAddVehicle").addEventListener("click", async () => {
+  const name = document.getElementById("vehicleName").value.trim();
+
+  if (name === "") {
+    alert("Veuillez entrer un nom de véhicule.");
+    return;
+  }
+
+  try {
+    const user = auth.currentUser;
+    const refVehicles = collection(db, "users", user.uid, "vehicles");
+
+    let imageUrl = "";
+
+    if (selectedImageFile) {
+      const storageRef = ref(storage, `vehicles/${user.uid}/${Date.now()}_${selectedImageFile.name}`);
+      await uploadBytes(storageRef, selectedImageFile);
+      imageUrl = await getDownloadURL(storageRef);
+    }
+
+    await addDoc(refVehicles, {
+      name: name,
+      sorties: 0,
+      imageUrl: imageUrl,
+      createdAt: serverTimestamp()
+    });
+
+    selectedImageFile = null;
+    document.getElementById("vehicleName").value = "";
+    document.getElementById("photoPreview").style.display = "none";
+
+    addModal.style.display = "none";
+
+    loadVehicles();
+
+  } catch (error) {
+    console.error("Erreur ajout véhicule :", error);
+  }
+});
+
+
+
+// ---------------------------------------------------------
+// 📸 MODIFICATION — GESTION PHOTO
+// ---------------------------------------------------------
+let editSelectedImageFile = null;
+
+document.getElementById("editTakePhotoBtn").addEventListener("click", () => {
+  document.getElementById("editCameraInput").click();
+});
+
+document.getElementById("editCameraInput").addEventListener("change", (e) => {
+  editSelectedImageFile = e.target.files[0];
+  previewEditImage(editSelectedImageFile);
+});
+
+document.getElementById("editUploadImage").addEventListener("change", (e) => {
+  editSelectedImageFile = e.target.files[0];
+  previewEditImage(editSelectedImageFile);
+});
+
+function previewEditImage(file) {
+  const preview = document.getElementById("editPhotoPreview");
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = "block";
+}
+
+
+
+// ---------------------------------------------------------
+// 🔥 MODIFIER NOM + PHOTO
+// ---------------------------------------------------------
+let vehicleToEdit = null;
+
+function openEditModal(id) {
+  vehicleToEdit = id;
+  document.getElementById("editModal").style.display = "flex";
+}
+
+document.getElementById("saveEditBtn").addEventListener("click", async () => {
+  const newName = document.getElementById("editVehicleName").value.trim();
+  if (newName === "") return;
+
+  try {
+    const user = auth.currentUser;
+    const refVehicle = doc(db, "users", user.uid, "vehicles", vehicleToEdit);
+
+    let newImageUrl = null;
+
+    if (editSelectedImageFile) {
+      const storageRef = ref(storage, `vehicles/${user.uid}/${Date.now()}_${editSelectedImageFile.name}`);
+      await uploadBytes(storageRef, editSelectedImageFile);
+      newImageUrl = await getDownloadURL(storageRef);
+    }
+
+    const updateData = { name: newName };
+    if (newImageUrl) updateData.imageUrl = newImageUrl;
+
+    await updateDoc(refVehicle, updateData);
+
+    editSelectedImageFile = null;
+    document.getElementById("editVehicleName").value = "";
+    document.getElementById("editPhotoPreview").style.display = "none";
+
+    document.getElementById("editModal").style.display = "none";
+
+    loadVehicles();
+
+  } catch (error) {
+    console.error("Erreur modification :", error);
+  }
+});
+
+
+
+// ---------------------------------------------------------
+// 🔥 INCRÉMENTER SORTIES
+// ---------------------------------------------------------
+async function incrementVehicle(id) {
+  try {
+    const user = auth.currentUser;
+    const refVehicle = doc(db, "users", user.uid, "vehicles", id);
+    const snap = await getDoc(refVehicle);
+
+    if (!snap.exists()) return;
+
+    const current = snap.data().sorties || 0;
+
+    await updateDoc(refVehicle, { sorties: current + 1 });
+
+    loadVehicles();
+
+  } catch (error) {
+    console.error("Erreur increment :", error);
+  }
+}
+
+
+
+// ---------------------------------------------------------
+// 🔥 SUPPRIMER UN VÉHICULE
+// ---------------------------------------------------------
+async function deleteVehicle(id) {
+  if (!confirm("Supprimer ce véhicule ?")) return;
+
+  try {
+    const user = auth.currentUser;
+    const refVehicle = doc(db, "users", user.uid, "vehicles", id);
+
+    await deleteDoc(refVehicle);
+
+    loadVehicles();
+
+  } catch (error) {
+    console.error("Erreur suppression :", error);
+  }
+});
