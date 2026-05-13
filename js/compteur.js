@@ -1,63 +1,87 @@
-import { auth, db, storage } from "./firebase-config.js";
+console.log("COMPTEUR.JS CHARGÉ !");
+
+// ---------------------------------------------------------
+// 🔥 IMPORTS FIREBASE
+// ---------------------------------------------------------
+import { auth, db } from "./firebase-config.js";
 
 import {
-  doc,
-  getDoc,
-  updateDoc,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+import {
   collection,
   addDoc,
   getDocs,
-  serverTimestamp,
-  deleteDoc
+  doc,
+  getDoc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+// ---------------------------------------------------------
+// 🔥 VARIABLES DOM
+// ---------------------------------------------------------
+const vehicleList = document.getElementById("vehicleList");
+const addModal = document.getElementById("addModal");
+const editModal = document.getElementById("editModal");
+
+const addVehicleBtn = document.getElementById("addVehicleBtn");
+const saveVehicleBtn = document.getElementById("saveVehicleBtn");
+const closeAddModal = document.getElementById("closeAddModal");
+
+const saveEditBtn = document.getElementById("saveEditBtn");
+const closeEditModal = document.getElementById("closeEditModal");
+
+const openCameraBtn = document.getElementById("openCameraBtn");
+const cameraPreview = document.getElementById("cameraPreview");
+
+let currentEditId = null;
+let cameraStream = null;
+let capturedImage = null;
+let userId = null;
 
 
 // ---------------------------------------------------------
-// 🔥 CHARGEMENT UTILISATEUR
+// 🔥 AUTHENTIFICATION + SÉCURITÉ
 // ---------------------------------------------------------
-auth.onAuthStateChanged(async (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "./login.html";
     return;
   }
 
-  try {
-    const refUser = doc(db, "users", user.uid);
-    const snap = await getDoc(refUser);
+  userId = user.uid;
 
-    if (!snap.exists()) {
-      alert("Erreur : utilisateur introuvable.");
-      await auth.signOut();
-      return;
-    }
+  const ref = doc(db, "users", user.uid);
+  const snap = await getDoc(ref);
 
-    const data = snap.data();
-
-    if (!data.validated) {
-      alert("Votre compte n'est pas encore validé.");
-      await auth.signOut();
-      return;
-    }
-
-    if (data.role === "admin" || data.isAdmin === true) {
-      const adminBtn = document.getElementById("admin-btn");
-      if (adminBtn) adminBtn.style.display = "block";
-    }
-
-    const pseudoSpan = document.getElementById("pseudo");
-    if (pseudoSpan) pseudoSpan.textContent = data.pseudo;
-
-    loadVehicles();
-
-  } catch (error) {
-    console.error("Erreur chargement utilisateur :", error);
+  if (!snap.exists()) {
+    alert("Erreur : utilisateur introuvable.");
+    await signOut(auth);
+    return;
   }
+
+  const data = snap.data();
+
+  // 🔥 Bloquer si non validé
+  if (!data.validated) {
+    alert("Votre compte n'est pas encore validé.");
+    await signOut(auth);
+    return;
+  }
+
+  // 🔥 Afficher bouton admin si nécessaire
+  if (data.role === "admin" || data.isAdmin === true) {
+    document.getElementById("admin-btn").style.display = "block";
+  }
+
+  document.getElementById("user-title").textContent = `Véhicules de ${data.pseudo}`;
+
+  loadVehicles();
 });
 
 
@@ -65,245 +89,86 @@ auth.onAuthStateChanged(async (user) => {
 // 🔥 CHARGER LES VÉHICULES
 // ---------------------------------------------------------
 async function loadVehicles() {
-  const user = auth.currentUser;
-  const list = document.getElementById("vehicleList");
+  vehicleList.innerHTML = "<p>Chargement...</p>";
 
-  if (!list) return;
+  const snap = await getDocs(collection(db, "users", userId, "vehicles"));
 
-  list.innerHTML = "<p>Chargement...</p>";
-
-  try {
-    const refVehicles = collection(db, "users", user.uid, "vehicles");
-    const snap = await getDocs(refVehicles);
-
-    list.innerHTML = "";
-
-    snap.forEach(docu => {
-      const v = docu.data();
-
-      const card = document.createElement("div");
-      card.className = "vehicle-card";
-
-      card.innerHTML = `
-        <h3>${v.name}</h3>
-        <img src="${v.imageUrl || "./img/no-image.png"}" data-id="${docu.id}">
-        <p>Sorties : <strong>${v.sorties}</strong></p>
-
-        <button class="add-sortie-btn" data-id="${docu.id}">+1 sortie</button>
-        <button class="edit-btn" data-id="${docu.id}">Modifier</button>
-        <button class="delete-vehicle-btn" data-id="${docu.id}">Supprimer</button>
-      `;
-
-      list.appendChild(card);
-    });
-
-    document.querySelectorAll(".add-sortie-btn").forEach(btn => {
-      btn.addEventListener("click", () => incrementVehicle(btn.dataset.id));
-    });
-
-    document.querySelectorAll(".delete-vehicle-btn").forEach(btn => {
-      btn.addEventListener("click", () => deleteVehicle(btn.dataset.id));
-    });
-
-    document.querySelectorAll(".vehicle-card img").forEach(img => {
-      img.addEventListener("dblclick", () => incrementVehicle(img.dataset.id));
-    });
-
-    document.querySelectorAll(".edit-btn").forEach(btn => {
-      btn.addEventListener("click", () => openEditModal(btn.dataset.id));
-    });
-
-  } catch (error) {
-    console.error("Erreur chargement véhicules :", error);
-  }
-}
-
-
-
-// ---------------------------------------------------------
-// 📸 AJOUT — GESTION PHOTO
-// ---------------------------------------------------------
-let selectedImageFile = null;
-
-document.getElementById("takePhotoBtn").addEventListener("click", () => {
-  document.getElementById("cameraInput").click();
-});
-
-document.getElementById("cameraInput").addEventListener("change", (e) => {
-  selectedImageFile = e.target.files[0];
-  previewImage(selectedImageFile);
-});
-
-document.getElementById("uploadImage").addEventListener("change", (e) => {
-  selectedImageFile = e.target.files[0];
-  previewImage(selectedImageFile);
-});
-
-function previewImage(file) {
-  const preview = document.getElementById("photoPreview");
-  preview.src = URL.createObjectURL(file);
-  preview.style.display = "block";
-}
-
-
-
-// ---------------------------------------------------------
-// 🔥 AJOUTER UN VÉHICULE
-// ---------------------------------------------------------
-document.getElementById("confirmAddVehicle").addEventListener("click", async () => {
-  const name = document.getElementById("vehicleName").value.trim();
-
-  if (name === "") {
-    alert("Veuillez entrer un nom de véhicule.");
+  if (snap.empty) {
+    vehicleList.innerHTML = "<p>Aucun véhicule pour le moment.</p>";
     return;
   }
 
-  try {
-    const user = auth.currentUser;
-    const refVehicles = collection(db, "users", user.uid, "vehicles");
+  vehicleList.innerHTML = "";
 
-    let imageUrl = "";
+  snap.forEach((docu) => {
+    const v = docu.data();
 
-    if (selectedImageFile) {
-      const storageRef = ref(storage, `vehicles/${user.uid}/${Date.now()}_${selectedImageFile.name}`);
-      await uploadBytes(storageRef, selectedImageFile);
-      imageUrl = await getDownloadURL(storageRef);
-    }
+    const card = document.createElement("div");
+    card.className = "vehicle-card";
 
-    await addDoc(refVehicles, {
-      name: name,
-      sorties: 0,
-      imageUrl: imageUrl,
-      createdAt: serverTimestamp()
-    });
+    card.innerHTML = `
+      <h3>${v.name}</h3>
+      <img src="${v.imageUrl}" data-id="${docu.id}">
+      <p>Sorties : <strong>${v.sorties}</strong></p>
 
-    selectedImageFile = null;
-    document.getElementById("vehicleName").value = "";
-    document.getElementById("photoPreview").style.display = "none";
+      <button class="btn-primary sortieBtn" data-id="${docu.id}">+1 sortie</button>
+      <button class="btn-secondary editBtn" data-id="${docu.id}" data-name="${v.name}">Modifier</button>
+      <button class="btn-danger deleteBtn" data-id="${docu.id}">Supprimer</button>
+    `;
 
-    addModal.style.display = "none";
+    vehicleList.appendChild(card);
+  });
 
-    loadVehicles();
+  // Boutons
+  document.querySelectorAll(".sortieBtn").forEach(btn =>
+    btn.addEventListener("click", () => incrementSortie(btn.dataset.id))
+  );
 
-  } catch (error) {
-    console.error("Erreur ajout véhicule :", error);
-  }
-});
+  document.querySelectorAll(".editBtn").forEach(btn =>
+    btn.addEventListener("click", () => openEditModal(btn.dataset.id, btn.dataset.name))
+  );
 
+  document.querySelectorAll(".deleteBtn").forEach(btn =>
+    btn.addEventListener("click", () => deleteVehicle(btn.dataset.id))
+  );
 
-
-// ---------------------------------------------------------
-// 📸 MODIFICATION — GESTION PHOTO
-// ---------------------------------------------------------
-let editSelectedImageFile = null;
-
-document.getElementById("editTakePhotoBtn").addEventListener("click", () => {
-  document.getElementById("editCameraInput").click();
-});
-
-document.getElementById("editCameraInput").addEventListener("change", (e) => {
-  editSelectedImageFile = e.target.files[0];
-  previewEditImage(editSelectedImageFile);
-});
-
-document.getElementById("editUploadImage").addEventListener("change", (e) => {
-  editSelectedImageFile = e.target.files[0];
-  previewEditImage(editSelectedImageFile);
-});
-
-function previewEditImage(file) {
-  const preview = document.getElementById("editPhotoPreview");
-  preview.src = URL.createObjectURL(file);
-  preview.style.display = "block";
+  // Double clic sur image = +1 sortie
+  document.querySelectorAll(".vehicle-card img").forEach(img =>
+    img.addEventListener("dblclick", () => incrementSortie(img.dataset.id))
+  );
 }
 
 
-
 // ---------------------------------------------------------
-// 🔥 MODIFIER NOM + PHOTO
+// 🔥 AJOUT VÉHICULE
 // ---------------------------------------------------------
-let vehicleToEdit = null;
-
-function openEditModal(id) {
-  vehicleToEdit = id;
-  document.getElementById("editModal").style.display = "flex";
-}
-
-document.getElementById("saveEditBtn").addEventListener("click", async () => {
-  const newName = document.getElementById("editVehicleName").value.trim();
-  if (newName === "") return;
-
-  try {
-    const user = auth.currentUser;
-    const refVehicle = doc(db, "users", user.uid, "vehicles", vehicleToEdit);
-
-    let newImageUrl = null;
-
-    if (editSelectedImageFile) {
-      const storageRef = ref(storage, `vehicles/${user.uid}/${Date.now()}_${editSelectedImageFile.name}`);
-      await uploadBytes(storageRef, editSelectedImageFile);
-      newImageUrl = await getDownloadURL(storageRef);
-    }
-
-    const updateData = { name: newName };
-    if (newImageUrl) updateData.imageUrl = newImageUrl;
-
-    await updateDoc(refVehicle, updateData);
-
-    editSelectedImageFile = null;
-    document.getElementById("editVehicleName").value = "";
-    document.getElementById("editPhotoPreview").style.display = "none";
-
-    document.getElementById("editModal").style.display = "none";
-
-    loadVehicles();
-
-  } catch (error) {
-    console.error("Erreur modification :", error);
-  }
+addVehicleBtn.addEventListener("click", () => {
+  addModal.style.display = "flex";
+  capturedImage = null;
 });
 
-
-
-// ---------------------------------------------------------
-// 🔥 INCRÉMENTER SORTIES
-// ---------------------------------------------------------
-async function incrementVehicle(id) {
-  try {
-    const user = auth.currentUser;
-    const refVehicle = doc(db, "users", user.uid, "vehicles", id);
-    const snap = await getDoc(refVehicle);
-
-    if (!snap.exists()) return;
-
-    const current = snap.data().sorties || 0;
-
-    await updateDoc(refVehicle, { sorties: current + 1 });
-
-    loadVehicles();
-
-  } catch (error) {
-    console.error("Erreur increment :", error);
-  }
-}
-
-
-
-// ---------------------------------------------------------
-// 🔥 SUPPRIMER UN VÉHICULE
-// ---------------------------------------------------------
-async function deleteVehicle(id) {
-  if (!confirm("Supprimer ce véhicule ?")) return;
-
-  try {
-    const user = auth.currentUser;
-    const refVehicle = doc(db, "users", user.uid, "vehicles", id);
-
-    await deleteDoc(refVehicle);
-
-    loadVehicles();
-
-  } catch (error) {
-    console.error("Erreur suppression :", error);
-  }
+closeAddModal.addEventListener("click", () => {
+  addModal.style.display = "none";
+  stopCamera();
 });
+
+openCameraBtn.addEventListener("click", async () => {
+  cameraPreview.style.display = "block";
+
+  cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+  cameraPreview.srcObject = cameraStream;
+
+  cameraPreview.addEventListener("click", () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = cameraPreview.videoWidth;
+    canvas.height = cameraPreview.videoHeight;
+
+    canvas.getContext("2d").drawImage(cameraPreview, 0, 0);
+    capturedImage = canvas.toDataURL("image/jpeg");
+
+    stopCamera();
+    cameraPreview.style.display = "none";
+  });
+});
+
+function stopCamera
