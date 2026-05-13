@@ -119,34 +119,37 @@ async function loadVehicles() {
 }
 
 
+
 // ---------------------------------------------------------
-// 📸 GESTION PHOTO / UPLOAD
+// 📸 GESTION PHOTO / UPLOAD POUR MODIFICATION
 // ---------------------------------------------------------
-let selectedImageFile = null;
+
+let editSelectedImageFile = null;
 
 // Ouvrir caméra
-document.getElementById("takePhotoBtn").addEventListener("click", () => {
-  document.getElementById("cameraInput").click();
+document.getElementById("editTakePhotoBtn").addEventListener("click", () => {
+  document.getElementById("editCameraInput").click();
 });
 
 // Photo via caméra
-document.getElementById("cameraInput").addEventListener("change", (e) => {
-  selectedImageFile = e.target.files[0];
-  previewImage(selectedImageFile);
+document.getElementById("editCameraInput").addEventListener("change", (e) => {
+  editSelectedImageFile = e.target.files[0];
+  previewEditImage(editSelectedImageFile);
 });
 
 // Upload classique
-document.getElementById("uploadImage").addEventListener("change", (e) => {
-  selectedImageFile = e.target.files[0];
-  previewImage(selectedImageFile);
+document.getElementById("editUploadImage").addEventListener("change", (e) => {
+  editSelectedImageFile = e.target.files[0];
+  previewEditImage(editSelectedImageFile);
 });
 
 // Preview
-function previewImage(file) {
-  const preview = document.getElementById("photoPreview");
+function previewEditImage(file) {
+  const preview = document.getElementById("editPhotoPreview");
   preview.src = URL.createObjectURL(file);
   preview.style.display = "block";
 }
+
 
 
 // ---------------------------------------------------------
