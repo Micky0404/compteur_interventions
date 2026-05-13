@@ -42,7 +42,6 @@ auth.onAuthStateChanged(async (user) => {
 
     // 🔥 Admin détecté
     if (data.role === "admin" || data.isAdmin === true) {
-      console.log("Admin détecté → accès compteur OK");
       const adminBtn = document.getElementById("admin-btn");
       if (adminBtn) adminBtn.style.display = "block";
     }
@@ -121,6 +120,95 @@ async function loadVehicles() {
 
 
 // ---------------------------------------------------------
+// 🔥 AJOUTER UN VÉHICULE
+// ---------------------------------------------------------
+
+// Ouvrir la modale
+const addVehicleBtn = document.getElementById("addVehicleBtn");
+const addModal = document.getElementById("addModal");
+
+if (addVehicleBtn) {
+  addVehicleBtn.addEventListener("click", () => {
+    addModal.style.display = "flex";
+  });
+}
+
+// Confirmer l'ajout
+document.getElementById("confirmAddVehicle").addEventListener("click", async () => {
+  const name = document.getElementById("vehicleName").value.trim();
+
+  if (name === "") {
+    alert("Veuillez entrer un nom de véhicule.");
+    return;
+  }
+
+  try {
+    const user = auth.currentUser;
+    const ref = collection(db, "users", user.uid, "vehicles");
+
+    await addDoc(ref, {
+      name: name,
+      sorties: 0,
+      imageUrl: "",
+      createdAt: serverTimestamp()
+    });
+
+    addModal.style.display = "none";
+    document.getElementById("vehicleName").value = "";
+
+    loadVehicles();
+
+  } catch (error) {
+    console.error("Erreur ajout véhicule :", error);
+    alert("Impossible d'ajouter le véhicule.");
+  }
+});
+
+
+// ---------------------------------------------------------
+// 🔥 INCRÉMENTER SORTIES
+// ---------------------------------------------------------
+async function incrementVehicle(id) {
+  try {
+    const user = auth.currentUser;
+    const ref = doc(db, "users", user.uid, "vehicles", id);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) return;
+
+    const current = snap.data().sorties || 0;
+
+    await updateDoc(ref, { sorties: current + 1 });
+
+    loadVehicles();
+
+  } catch (error) {
+    console.error("Erreur increment :", error);
+  }
+}
+
+
+// ---------------------------------------------------------
+// 🔥 SUPPRIMER UN VÉHICULE
+// ---------------------------------------------------------
+async function deleteVehicle(id) {
+  if (!confirm("Supprimer ce véhicule ?")) return;
+
+  try {
+    const user = auth.currentUser;
+    const ref = doc(db, "users", user.uid, "vehicles", id);
+
+    await deleteDoc(ref);
+
+    loadVehicles();
+
+  } catch (error) {
+    console.error("Erreur suppression :", error);
+  }
+}
+
+
+// ---------------------------------------------------------
 // 🔥 MODIFIER LE NOM D’UN VÉHICULE
 // ---------------------------------------------------------
 let vehicleToEdit = null;
@@ -140,4 +228,12 @@ document.getElementById("saveEditBtn").addEventListener("click", async () => {
 
     await updateDoc(ref, { name: newName });
 
-    document.getElement
+    document.getElementById("editModal").style.display = "none";
+    document.getElementById("editVehicleName").value = "";
+
+    loadVehicles();
+
+  } catch (error) {
+    console.error("Erreur modification :", error);
+  }
+});
