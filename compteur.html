@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Compteur véhicules</title>
+  <title>Compteur d’interventions</title>
   <link rel="stylesheet" href="./css/style.css">
 </head>
 
@@ -11,107 +11,63 @@
 
 <!-- 🔥 HEADER PRIVÉ -->
 <header class="neo-header">
+  <div class="header-left">
+    <h1 class="app-title">Compteur d’interventions</h1>
+  </div>
+
   <div class="header-right">
+    <button class="header-btn" onclick="window.location.href='./historique.html'">Historique</button>
 
-    <!-- Bouton Historique -->
-    <button class="header-btn" onclick="window.location.href='./historique.html'">
-      Historique
-    </button>
-
-    <!-- Bouton admin (affiché par JS si admin) -->
-    <button class="header-btn" id="admin-btn" style="display:none;"
-            onclick="window.location.href='./admin.html'">
+    <!-- Bouton admin affiché dynamiquement -->
+    <button class="header-btn" id="admin-btn" style="display:none;" onclick="window.location.href='./admin.html'">
       Admin
     </button>
 
-    <!-- Déconnexion -->
     <button class="header-btn logout-btn">Déconnexion</button>
-
   </div>
 </header>
 
-
-<!-- 🔥 CONTENU PRINCIPAL -->
+<!-- 🔥 CONTENU -->
 <div class="container">
 
-  <h1>Véhicules de <span id="pseudo"></span></h1>
+  <h2 id="user-title">Mes véhicules</h2>
 
-  <!-- Bouton ajout véhicule -->
-  <button id="addVehicleBtn" class="primary-btn">
+  <button id="addVehicleBtn" class="btn-primary" style="margin-bottom:20px;">
     Ajouter un véhicule
   </button>
 
-  <!-- Liste des véhicules -->
   <div id="vehicleList" class="vehicle-list"></div>
-
 </div>
 
-
-<!-- 🔥 MODALE AJOUT VEHICULE -->
-<div class="modal" id="addModal">
+<!-- 🔥 MODALE AJOUT -->
+<div id="addModal" class="modal">
   <div class="modal-content">
-
-    <h2>Ajouter un véhicule</h2>
+    <h3>Ajouter un véhicule</h3>
 
     <input type="text" id="vehicleName" placeholder="Nom du véhicule">
 
-    <br><br>
+    <button id="openCameraBtn" class="btn-secondary" style="margin-top:10px;">Prendre une photo</button>
+    <video id="cameraPreview" autoplay style="width:100%; margin-top:10px; display:none;"></video>
 
-    <!-- Photo via caméra -->
-    <button id="takePhotoBtn">Prendre une photo</button>
-    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
+    <input type="file" id="vehicleImage" accept="image/*">
 
-    <!-- Preview -->
-    <img id="photoPreview" style="max-width:200px; margin-top:10px; display:none;">
-
-    <br><br>
-
-    <!-- Upload classique -->
-    <input type="file" id="uploadImage" accept="image/*">
-
-    <br><br>
-
-    <button id="confirmAddVehicle" class="primary-btn">
-      Enregistrer
-    </button>
-
+    <button id="saveVehicleBtn" class="btn-primary" style="margin-top:20px;">Enregistrer</button>
+    <button id="closeAddModal" class="btn-danger" style="margin-top:10px;">Annuler</button>
   </div>
 </div>
 
-
-<!-- 🔥 MODALE MODIFICATION VEHICULE -->
-<div class="modal" id="editModal">
+<!-- 🔥 MODALE MODIFICATION -->
+<div id="editModal" class="modal">
   <div class="modal-content">
+    <h3>Modifier le véhicule</h3>
 
-    <h2>Modifier le véhicule</h2>
+    <input type="text" id="editVehicleName">
 
-    <input type="text" id="editVehicleName" placeholder="Nouveau nom">
-
-    <br><br>
-
-    <!-- Photo via caméra -->
-    <button id="editTakePhotoBtn">Prendre une photo</button>
-    <input type="file" id="editCameraInput" accept="image/*" capture="environment" style="display:none;">
-
-    <!-- Preview -->
-    <img id="editPhotoPreview" style="max-width:200px; margin-top:10px; display:none;">
-
-    <br><br>
-
-    <!-- Upload classique -->
-    <input type="file" id="editUploadImage" accept="image/*">
-
-    <br><br>
-
-    <button id="saveEditBtn" class="primary-btn">
-      Enregistrer
-    </button>
-
+    <button id="saveEditBtn" class="btn-primary" style="margin-top:20px;">Enregistrer</button>
+    <button id="closeEditModal" class="btn-danger" style="margin-top:10px;">Annuler</button>
   </div>
 </div>
 
-
-<!-- 🔥 SCRIPT -->
 <script type="module" src="./js/compteur.js"></script>
 
 </body>
