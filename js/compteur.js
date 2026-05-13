@@ -40,16 +40,18 @@ const openCameraBtn = document.getElementById("openCameraBtn");
 const cameraPreview = document.getElementById("cameraPreview");
 
 const imageFile = document.getElementById("imageFile");
+const editImageFile = document.getElementById("editImageFile");
 
 let currentEditId = null;
 let cameraStream = null;
 let capturedImage = null;
+let newEditedImage = null;
 let userId = null;
 let isAdmin = false;
 
 
 // ---------------------------------------------------------
-// 🔥 UPLOAD FICHIER IMAGE
+// 🔥 UPLOAD FICHIER IMAGE (AJOUT)
 // ---------------------------------------------------------
 imageFile.addEventListener("change", () => {
   const file = imageFile.files[0];
@@ -57,7 +59,22 @@ imageFile.addEventListener("change", () => {
 
   const reader = new FileReader();
   reader.onload = (e) => {
-    capturedImage = e.target.result; // 🔥 base64
+    capturedImage = e.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+
+// ---------------------------------------------------------
+// 🔥 UPLOAD FICHIER IMAGE (MODIFICATION)
+// ---------------------------------------------------------
+editImageFile.addEventListener("change", () => {
+  const file = editImageFile.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    newEditedImage = e.target.result;
   };
   reader.readAsDataURL(file);
 });
@@ -103,7 +120,7 @@ onAuthStateChanged(auth, async (user) => {
 
 
 // ---------------------------------------------------------
-// 🔥 CHARGER LES VÉHICULES (ADMIN = seulement ses véhicules)
+// 🔥 CHARGER LES VÉHICULES
 // ---------------------------------------------------------
 async function loadVehicles() {
   vehicleList.innerHTML = "<p>Chargement...</p>";
@@ -224,6 +241,8 @@ saveVehicleBtn.addEventListener("click", async () => {
 // ---------------------------------------------------------
 function openEditModal(id, name) {
   currentEditId = id;
+  newEditedImage = null;
+  editImageFile.value = "";
   document.getElementById("editName").value = name;
   editModal.style.display = "flex";
 }
@@ -237,9 +256,16 @@ saveEditBtn.addEventListener("click", async () => {
 
   if (!newName) return;
 
-  await updateDoc(doc(db, "users", userId, "vehicles", currentEditId), {
-    name: newName
-  });
+  const updateData = { name: newName };
+
+  if (newEditedImage) {
+    updateData.imageUrl = newEditedImage;
+  }
+
+  await updateDoc(doc(db, "users", userId, "vehicles", currentEditId), updateData);
+
+  newEditedImage = null;
+  editImageFile.value = "";
 
   editModal.style.display = "none";
   loadVehicles();
