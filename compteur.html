@@ -77,13 +77,27 @@
 </div>
 
 
-<!-- 🔥 MODALE MODIFICATION NOM VÉHICULE -->
+<!-- 🔥 MODALE MODIFICATION NOM et PHOTO VÉHICULE -->
 <div class="modal" id="editModal">
   <div class="modal-content">
 
-    <h2>Modifier le nom du véhicule</h2>
+    <h2>Modifier le véhicule</h2>
 
     <input type="text" id="editVehicleName" placeholder="Nouveau nom">
+
+    <br><br>
+
+    <!-- Photo via caméra -->
+    <button id="editTakePhotoBtn">Prendre une photo</button>
+    <input type="file" id="editCameraInput" accept="image/*" capture="environment" style="display:none;">
+
+    <!-- Preview -->
+    <img id="editPhotoPreview" style="max-width:200px; margin-top:10px; display:none;">
+
+    <br><br>
+
+    <!-- Upload classique -->
+    <input type="file" id="editUploadImage" accept="image/*">
 
     <br><br>
 
