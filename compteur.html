@@ -9,23 +9,29 @@
 
 <body>
 
+<!-- 🔥 HEADER PRIVÉ -->
 <header class="neo-header">
   <div class="header-right">
-    <button class="header-btn" onclick="window.location.href='./historique.html'">Historique</button>
-    <button class="header-btn" id="admin-btn" style="display:none;" onclick="window.location.href='./admin.html'">Admin</button>
+
+    <!-- Bouton Historique -->
+    <button class="header-btn" onclick="window.location.href='./historique.html'">
+      Historique
+    </button>
+
+    <!-- Bouton admin (affiché par JS si admin) -->
+    <button class="header-btn" id="admin-btn" style="display:none;"
+            onclick="window.location.href='./admin.html'">
+      Admin
+    </button>
+
+    <!-- Déconnexion -->
     <button class="header-btn logout-btn">Déconnexion</button>
+
   </div>
 </header>
 
-<div class="container">
-  <h1>Véhicules de <span id="pseudo"></span></h1>
 
-  <button id="addVehicleBtn" class="primary-btn">Ajouter un véhicule</button>
-
-  <div id="vehicleList" class="vehicle-list"></div>
-</div>
-
-  <!-- 🔥 CONTENU PRINCIPAL -->
+<!-- 🔥 CONTENU PRINCIPAL -->
 <div class="container">
 
   <h1>Véhicules de <span id="pseudo"></span></h1>
@@ -51,18 +57,23 @@
 
     <br><br>
 
+    <!-- Photo via caméra -->
     <button id="takePhotoBtn">Prendre une photo</button>
     <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
 
+    <!-- Preview -->
     <img id="photoPreview" style="max-width:200px; margin-top:10px; display:none;">
 
     <br><br>
 
+    <!-- Upload classique -->
     <input type="file" id="uploadImage" accept="image/*">
 
     <br><br>
 
-    <button id="confirmAddVehicle" class="primary-btn">Enregistrer</button>
+    <button id="confirmAddVehicle" class="primary-btn">
+      Enregistrer
+    </button>
 
   </div>
 </div>
@@ -78,23 +89,29 @@
 
     <br><br>
 
+    <!-- Photo via caméra -->
     <button id="editTakePhotoBtn">Prendre une photo</button>
     <input type="file" id="editCameraInput" accept="image/*" capture="environment" style="display:none;">
 
+    <!-- Preview -->
     <img id="editPhotoPreview" style="max-width:200px; margin-top:10px; display:none;">
 
     <br><br>
 
+    <!-- Upload classique -->
     <input type="file" id="editUploadImage" accept="image/*">
 
     <br><br>
 
-    <button id="saveEditBtn" class="primary-btn">Enregistrer</button>
+    <button id="saveEditBtn" class="primary-btn">
+      Enregistrer
+    </button>
 
   </div>
 </div>
 
 
+<!-- 🔥 SCRIPT -->
 <script type="module" src="./js/compteur.js"></script>
 
 </body>
