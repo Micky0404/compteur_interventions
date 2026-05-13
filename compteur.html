@@ -1,74 +1,83 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Compteur d’interventions</title>
-  <link rel="stylesheet" href="./css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compteur d'interventions</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 
 <body>
 
-<!-- 🔥 HEADER PRIVÉ -->
-<header class="neo-header">
-  <div class="header-left">
-    <h1 class="app-title">Compteur d’interventions</h1>
-  </div>
+    <!-- ---------------------------------------------------------
+         🔥 HEADER
+    ---------------------------------------------------------- -->
+    <header class="main-header">
+        <h1 id="user-title">Mes véhicules</h1>
 
-  <div class="header-right">
-    <button class="header-btn" onclick="window.location.href='./historique.html'">Historique</button>
+        <nav class="header-nav">
+            <button id="admin-btn" class="btn-admin" style="display:none;">Admin</button>
+            <button id="addVehicleBtn" class="btn-primary">Ajouter un véhicule</button>
+            <button id="logoutBtn" class="btn-danger">Déconnexion</button>
+        </nav>
+    </header>
 
-    <!-- Bouton admin affiché dynamiquement -->
-    <button class="header-btn" id="admin-btn" style="display:none;" onclick="window.location.href='./admin.html'">
-      Admin
-    </button>
 
-    <button class="header-btn logout-btn">Déconnexion</button>
-  </div>
-</header>
+    <!-- ---------------------------------------------------------
+         🔥 LISTE DES VÉHICULES
+    ---------------------------------------------------------- -->
+    <section class="vehicle-section">
+        <div id="vehicleList" class="vehicle-list">
+            <!-- Véhicules chargés par compteur.js -->
+        </div>
+    </section>
 
-<!-- 🔥 CONTENU -->
-<div class="container">
 
-  <h2 id="user-title">Mes véhicules</h2>
+    <!-- ---------------------------------------------------------
+         🔥 MODAL AJOUT
+    ---------------------------------------------------------- -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <h2>Ajouter un véhicule</h2>
 
-  <button id="addVehicleBtn" class="btn-primary" style="margin-bottom:20px;">
-    Ajouter un véhicule
-  </button>
+            <label>Nom du véhicule :</label>
+            <input type="text" id="vehicleName" placeholder="Ex : Kangoo, Clio, etc.">
 
-  <div id="vehicleList" class="vehicle-list"></div>
-</div>
+            <button id="openCameraBtn" class="btn-secondary">Prendre une photo</button>
+            <video id="cameraPreview" autoplay style="display:none;"></video>
 
-<!-- 🔥 MODALE AJOUT -->
-<div id="addModal" class="modal">
-  <div class="modal-content">
-    <h3>Ajouter un véhicule</h3>
+            <div class="modal-actions">
+                <button id="saveVehicleBtn" class="btn-primary">Enregistrer</button>
+                <button id="closeAddModal" class="btn-danger">Annuler</button>
+            </div>
+        </div>
+    </div>
 
-    <input type="text" id="vehicleName" placeholder="Nom du véhicule">
 
-    <button id="openCameraBtn" class="btn-secondary" style="margin-top:10px;">Prendre une photo</button>
-    <video id="cameraPreview" autoplay style="width:100%; margin-top:10px; display:none;"></video>
+    <!-- ---------------------------------------------------------
+         🔥 MODAL ÉDITION
+    ---------------------------------------------------------- -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2>Modifier le véhicule</h2>
 
-    <input type="file" id="vehicleImage" accept="image/*">
+            <label>Nouveau nom :</label>
+            <input type="text" id="editName">
 
-    <button id="saveVehicleBtn" class="btn-primary" style="margin-top:20px;">Enregistrer</button>
-    <button id="closeAddModal" class="btn-danger" style="margin-top:10px;">Annuler</button>
-  </div>
-</div>
+            <div class="modal-actions">
+                <button id="saveEditBtn" class="btn-primary">Enregistrer</button>
+                <button id="closeEditModal" class="btn-danger">Annuler</button>
+            </div>
+        </div>
+    </div>
 
-<!-- 🔥 MODALE MODIFICATION -->
-<div id="editModal" class="modal">
-  <div class="modal-content">
-    <h3>Modifier le véhicule</h3>
 
-    <input type="text" id="editVehicleName">
-
-    <button id="saveEditBtn" class="btn-primary" style="margin-top:20px;">Enregistrer</button>
-    <button id="closeEditModal" class="btn-danger" style="margin-top:10px;">Annuler</button>
-  </div>
-</div>
-
-<script type="module" src="./js/compteur.js"></script>
+    <!-- ---------------------------------------------------------
+         🔥 SCRIPTS
+    ---------------------------------------------------------- -->
+    <script type="module" src="./js/compteur.js"></script>
 
 </body>
 </html>
