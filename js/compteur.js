@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase-config.js";
+import { auth, db, storage } from "./firebase-config.js";
 
 import {
   doc,
@@ -11,6 +11,12 @@ import {
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
 
 // ---------------------------------------------------------
 // 🔥 CHARGEMENT UTILISATEUR
@@ -22,8 +28,8 @@ auth.onAuthStateChanged(async (user) => {
   }
 
   try {
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
+    const refUser = doc(db, "users", user.uid);
+    const snap = await getDoc(refUser);
 
     if (!snap.exists()) {
       alert("Erreur : utilisateur introuvable.");
@@ -33,20 +39,17 @@ auth.onAuthStateChanged(async (user) => {
 
     const data = snap.data();
 
-    // 🔥 Bloquer si non validé
     if (!data.validated) {
       alert("Votre compte n'est pas encore validé.");
       await auth.signOut();
       return;
     }
 
-    // 🔥 Admin détecté
     if (data.role === "admin" || data.isAdmin === true) {
       const adminBtn = document.getElementById("admin-btn");
       if (adminBtn) adminBtn.style.display = "block";
     }
 
-    // Affichage pseudo
     const pseudoSpan = document.getElementById("pseudo");
     if (pseudoSpan) pseudoSpan.textContent = data.pseudo;
 
@@ -54,7 +57,6 @@ auth.onAuthStateChanged(async (user) => {
 
   } catch (error) {
     console.error("Erreur chargement utilisateur :", error);
-    alert("Erreur interne.");
   }
 });
 
@@ -71,8 +73,8 @@ async function loadVehicles() {
   list.innerHTML = "<p>Chargement...</p>";
 
   try {
-    const ref = collection(db, "users", user.uid, "vehicles");
-    const snap = await getDocs(ref);
+    const refVehicles = collection(db, "users", user.uid, "vehicles");
+    const snap = await getDocs(refVehicles);
 
     list.innerHTML = "";
 
@@ -84,7 +86,7 @@ async function loadVehicles() {
 
       card.innerHTML = `
         <h3>${v.name}</h3>
-        <img src="${v.imageUrl || ""}" data-id="${docu.id}">
+        <img src="${v.imageUrl || "./img/no-image.png"}" data-id="${docu.id}">
         <p>Sorties : <strong>${v.sorties}</strong></p>
 
         <button class="add-sortie-btn" data-id="${docu.id}">+1 sortie</button>
@@ -95,7 +97,6 @@ async function loadVehicles() {
       list.appendChild(card);
     });
 
-    // Listeners
     document.querySelectorAll(".add-sortie-btn").forEach(btn => {
       btn.addEventListener("click", () => incrementVehicle(btn.dataset.id));
     });
@@ -114,26 +115,43 @@ async function loadVehicles() {
 
   } catch (error) {
     console.error("Erreur chargement véhicules :", error);
-    list.innerHTML = "<p>Erreur lors du chargement.</p>";
   }
 }
 
 
 // ---------------------------------------------------------
-// 🔥 AJOUTER UN VÉHICULE
+// 📸 GESTION PHOTO / UPLOAD
 // ---------------------------------------------------------
+let selectedImageFile = null;
 
-// Ouvrir la modale
-const addVehicleBtn = document.getElementById("addVehicleBtn");
-const addModal = document.getElementById("addModal");
+// Ouvrir caméra
+document.getElementById("takePhotoBtn").addEventListener("click", () => {
+  document.getElementById("cameraInput").click();
+});
 
-if (addVehicleBtn) {
-  addVehicleBtn.addEventListener("click", () => {
-    addModal.style.display = "flex";
-  });
+// Photo via caméra
+document.getElementById("cameraInput").addEventListener("change", (e) => {
+  selectedImageFile = e.target.files[0];
+  previewImage(selectedImageFile);
+});
+
+// Upload classique
+document.getElementById("uploadImage").addEventListener("change", (e) => {
+  selectedImageFile = e.target.files[0];
+  previewImage(selectedImageFile);
+});
+
+// Preview
+function previewImage(file) {
+  const preview = document.getElementById("photoPreview");
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = "block";
 }
 
-// Confirmer l'ajout
+
+// ---------------------------------------------------------
+// 🔥 AJOUTER UN VÉHICULE AVEC PHOTO
+// ---------------------------------------------------------
 document.getElementById("confirmAddVehicle").addEventListener("click", async () => {
   const name = document.getElementById("vehicleName").value.trim();
 
@@ -144,23 +162,34 @@ document.getElementById("confirmAddVehicle").addEventListener("click", async () 
 
   try {
     const user = auth.currentUser;
-    const ref = collection(db, "users", user.uid, "vehicles");
+    const refVehicles = collection(db, "users", user.uid, "vehicles");
 
-    await addDoc(ref, {
+    let imageUrl = "";
+
+    // 📸 Upload Storage si image sélectionnée
+    if (selectedImageFile) {
+      const storageRef = ref(storage, `vehicles/${user.uid}/${Date.now()}_${selectedImageFile.name}`);
+      await uploadBytes(storageRef, selectedImageFile);
+      imageUrl = await getDownloadURL(storageRef);
+    }
+
+    await addDoc(refVehicles, {
       name: name,
       sorties: 0,
-      imageUrl: "",
+      imageUrl: imageUrl,
       createdAt: serverTimestamp()
     });
 
-    addModal.style.display = "none";
+    selectedImageFile = null;
     document.getElementById("vehicleName").value = "";
+    document.getElementById("photoPreview").style.display = "none";
+
+    addModal.style.display = "none";
 
     loadVehicles();
 
   } catch (error) {
     console.error("Erreur ajout véhicule :", error);
-    alert("Impossible d'ajouter le véhicule.");
   }
 });
 
@@ -171,14 +200,14 @@ document.getElementById("confirmAddVehicle").addEventListener("click", async () 
 async function incrementVehicle(id) {
   try {
     const user = auth.currentUser;
-    const ref = doc(db, "users", user.uid, "vehicles", id);
-    const snap = await getDoc(ref);
+    const refVehicle = doc(db, "users", user.uid, "vehicles", id);
+    const snap = await getDoc(refVehicle);
 
     if (!snap.exists()) return;
 
     const current = snap.data().sorties || 0;
 
-    await updateDoc(ref, { sorties: current + 1 });
+    await updateDoc(refVehicle, { sorties: current + 1 });
 
     loadVehicles();
 
@@ -196,9 +225,9 @@ async function deleteVehicle(id) {
 
   try {
     const user = auth.currentUser;
-    const ref = doc(db, "users", user.uid, "vehicles", id);
+    const refVehicle = doc(db, "users", user.uid, "vehicles", id);
 
-    await deleteDoc(ref);
+    await deleteDoc(refVehicle);
 
     loadVehicles();
 
@@ -209,7 +238,7 @@ async function deleteVehicle(id) {
 
 
 // ---------------------------------------------------------
-// 🔥 MODIFIER LE NOM D’UN VÉHICULE
+// 🔥 MODIFIER NOM
 // ---------------------------------------------------------
 let vehicleToEdit = null;
 
@@ -224,9 +253,9 @@ document.getElementById("saveEditBtn").addEventListener("click", async () => {
 
   try {
     const user = auth.currentUser;
-    const ref = doc(db, "users", user.uid, "vehicles", vehicleToEdit);
+    const refVehicle = doc(db, "users", user.uid, "vehicles", vehicleToEdit);
 
-    await updateDoc(ref, { name: newName });
+    await updateDoc(refVehicle, { name: newName });
 
     document.getElementById("editModal").style.display = "none";
     document.getElementById("editVehicleName").value = "";
