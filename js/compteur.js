@@ -39,12 +39,28 @@ const closeEditModal = document.getElementById("closeEditModal");
 const openCameraBtn = document.getElementById("openCameraBtn");
 const cameraPreview = document.getElementById("cameraPreview");
 
+const imageFile = document.getElementById("imageFile");
+
 let currentEditId = null;
-let currentOwnerId = null;
 let cameraStream = null;
 let capturedImage = null;
 let userId = null;
 let isAdmin = false;
+
+
+// ---------------------------------------------------------
+// 🔥 UPLOAD FICHIER IMAGE
+// ---------------------------------------------------------
+imageFile.addEventListener("change", () => {
+  const file = imageFile.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    capturedImage = e.target.result; // 🔥 base64
+  };
+  reader.readAsDataURL(file);
+});
 
 
 // ---------------------------------------------------------
@@ -69,14 +85,12 @@ onAuthStateChanged(auth, async (user) => {
 
   const data = snap.data();
 
-  // 🔥 Bloquer si non validé
   if (!data.validated) {
     alert("Votre compte n'est pas encore validé.");
     await signOut(auth);
     return;
   }
 
-  // 🔥 Admin → afficher bouton admin
   if (data.role === "admin" || data.isAdmin === true) {
     isAdmin = true;
     document.getElementById("admin-btn").style.display = "block";
@@ -122,7 +136,6 @@ async function loadVehicles() {
     vehicleList.appendChild(card);
   });
 
-  // Boutons
   document.querySelectorAll(".sortieBtn").forEach(btn =>
     btn.addEventListener("click", () => incrementSortie(btn.dataset.id))
   );
@@ -147,6 +160,7 @@ async function loadVehicles() {
 addVehicleBtn.addEventListener("click", () => {
   addModal.style.display = "flex";
   capturedImage = null;
+  imageFile.value = "";
 });
 
 closeAddModal.addEventListener("click", () => {
@@ -189,7 +203,7 @@ saveVehicleBtn.addEventListener("click", async () => {
   }
 
   if (!capturedImage) {
-    alert("Merci de prendre une photo.");
+    alert("Merci de sélectionner une image ou de prendre une photo.");
     return;
   }
 
