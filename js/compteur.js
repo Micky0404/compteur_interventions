@@ -69,3 +69,193 @@ onAuthStateChanged(auth, async (user) => {
 
   const data = snap.data();
 
+  // 🔥 Bloquer si non validé
+  if (!data.validated) {
+    alert("Votre compte n'est pas encore validé.");
+    await signOut(auth);
+    return;
+  }
+
+  // 🔥 Admin → afficher bouton admin
+  if (data.role === "admin" || data.isAdmin === true) {
+    isAdmin = true;
+    document.getElementById("admin-btn").style.display = "block";
+  }
+
+  document.getElementById("user-title").textContent = `Véhicules de ${data.pseudo}`;
+
+  loadVehicles();
+});
+
+
+// ---------------------------------------------------------
+// 🔥 CHARGER LES VÉHICULES (ADMIN = seulement ses véhicules)
+// ---------------------------------------------------------
+async function loadVehicles() {
+  vehicleList.innerHTML = "<p>Chargement...</p>";
+
+  const snap = await getDocs(collection(db, "users", userId, "vehicles"));
+
+  if (snap.empty) {
+    vehicleList.innerHTML = "<p>Aucun véhicule pour le moment.</p>";
+    return;
+  }
+
+  vehicleList.innerHTML = "";
+
+  snap.forEach((docu) => {
+    const v = docu.data();
+
+    const card = document.createElement("div");
+    card.className = "vehicle-card";
+
+    card.innerHTML = `
+      <h3>${v.name}</h3>
+      <img src="${v.imageUrl}" data-id="${docu.id}">
+      <p>Sorties : <strong>${v.sorties}</strong></p>
+
+      <button class="btn-primary sortieBtn" data-id="${docu.id}">+1 sortie</button>
+      <button class="btn-secondary editBtn" data-id="${docu.id}" data-name="${v.name}">Modifier</button>
+      <button class="btn-danger deleteBtn" data-id="${docu.id}">Supprimer</button>
+    `;
+
+    vehicleList.appendChild(card);
+  });
+
+  // Boutons
+  document.querySelectorAll(".sortieBtn").forEach(btn =>
+    btn.addEventListener("click", () => incrementSortie(btn.dataset.id))
+  );
+
+  document.querySelectorAll(".editBtn").forEach(btn =>
+    btn.addEventListener("click", () => openEditModal(btn.dataset.id, btn.dataset.name))
+  );
+
+  document.querySelectorAll(".deleteBtn").forEach(btn =>
+    btn.addEventListener("click", () => deleteVehicle(btn.dataset.id))
+  );
+
+  document.querySelectorAll(".vehicle-card img").forEach(img =>
+    img.addEventListener("dblclick", () => incrementSortie(img.dataset.id))
+  );
+}
+
+
+// ---------------------------------------------------------
+// 🔥 AJOUT VÉHICULE
+// ---------------------------------------------------------
+addVehicleBtn.addEventListener("click", () => {
+  addModal.style.display = "flex";
+  capturedImage = null;
+});
+
+closeAddModal.addEventListener("click", () => {
+  addModal.style.display = "none";
+  stopCamera();
+});
+
+openCameraBtn.addEventListener("click", async () => {
+  cameraPreview.style.display = "block";
+
+  cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+  cameraPreview.srcObject = cameraStream;
+
+  cameraPreview.addEventListener("click", () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = cameraPreview.videoWidth;
+    canvas.height = cameraPreview.videoHeight;
+
+    canvas.getContext("2d").drawImage(cameraPreview, 0, 0);
+    capturedImage = canvas.toDataURL("image/jpeg");
+
+    stopCamera();
+    cameraPreview.style.display = "none";
+  });
+});
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+}
+
+saveVehicleBtn.addEventListener("click", async () => {
+  const name = document.getElementById("vehicleName").value.trim();
+
+  if (!name) {
+    alert("Merci d'indiquer un nom.");
+    return;
+  }
+
+  if (!capturedImage) {
+    alert("Merci de prendre une photo.");
+    return;
+  }
+
+  await addDoc(collection(db, "users", userId, "vehicles"), {
+    name,
+    imageUrl: capturedImage,
+    sorties: 0,
+    createdAt: serverTimestamp()
+  });
+
+  addModal.style.display = "none";
+  loadVehicles();
+});
+
+
+// ---------------------------------------------------------
+// 🔥 MODIFIER VÉHICULE
+// ---------------------------------------------------------
+function openEditModal(id, name) {
+  currentEditId = id;
+  document.getElementById("editName").value = name;
+  editModal.style.display = "flex";
+}
+
+closeEditModal.addEventListener("click", () => {
+  editModal.style.display = "none";
+});
+
+saveEditBtn.addEventListener("click", async () => {
+  const newName = document.getElementById("editName").value.trim();
+
+  if (!newName) return;
+
+  await updateDoc(doc(db, "users", userId, "vehicles", currentEditId), {
+    name: newName
+  });
+
+  editModal.style.display = "none";
+  loadVehicles();
+});
+
+
+// ---------------------------------------------------------
+// 🔥 SUPPRIMER VÉHICULE
+// ---------------------------------------------------------
+async function deleteVehicle(id) {
+  if (!confirm("Supprimer ce véhicule ?")) return;
+
+  await deleteDoc(doc(db, "users", userId, "vehicles", id));
+
+  loadVehicles();
+}
+
+
+// ---------------------------------------------------------
+// 🔥 INCRÉMENTER SORTIES
+// ---------------------------------------------------------
+async function incrementSortie(id) {
+  const ref = doc(db, "users", userId, "vehicles", id);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) return;
+
+  const sorties = snap.data().sorties || 0;
+
+  await updateDoc(ref, { sorties: sorties + 1 });
+
+  loadVehicles();
+}
