@@ -1,3 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compteur véhicules</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+
+<!-- 🔥 HEADER PRIVÉ -->
+<header class="neo-header">
+
+  <div class="header-right">
+
+    <!-- Bouton Historique -->
+    <button class="header-btn" onclick="window.location.href='./historique.html'">
+      Historique
+    </button>
+
+    <!-- Bouton admin (affiché par JS si admin) -->
+    <button class="header-btn" id="admin-btn" style="display:none;"
+            onclick="window.location.href='./admin.html'">
+      Admin
+    </button>
+
+    <!-- Déconnexion -->
+    <button class="header-btn logout-btn">Déconnexion</button>
+
+  </div>
+</header>
+
+
+<!-- 🔥 CONTENU PRINCIPAL -->
+<div class="container">
+
+  <h1>Véhicules de <span id="pseudo"></span></h1>
+
+  <!-- Bouton ajout véhicule -->
+  <button id="addVehicleBtn" class="primary-btn">
+    Ajouter un véhicule
+  </button>
+
+  <!-- Liste des véhicules -->
+  <div id="vehicleList" class="vehicle-list"></div>
+
+</div>
+
 <!-- 🔥 MODALE AJOUT VEHICULE -->
 <div class="modal" id="addModal">
   <div class="modal-content">
@@ -26,3 +75,28 @@
 
   </div>
 </div>
+
+
+<!-- 🔥 MODALE MODIFICATION NOM VÉHICULE -->
+<div class="modal" id="editModal">
+  <div class="modal-content">
+
+    <h2>Modifier le nom du véhicule</h2>
+
+    <input type="text" id="editVehicleName" placeholder="Nouveau nom">
+
+    <br><br>
+
+    <button id="saveEditBtn" class="primary-btn">
+      Enregistrer
+    </button>
+
+  </div>
+</div>
+
+
+<!-- 🔥 SCRIPT -->
+<script type="module" src="./js/compteur.js"></script>
+
+</body>
+</html>
