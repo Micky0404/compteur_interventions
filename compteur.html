@@ -5,15 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compteur d'interventions</title>
 
-    <!-- CSS -->
     <link rel="stylesheet" href="./css/style.css">
 </head>
 
 <body>
 
-    <!-- ---------------------------------------------------------
-         🔥 HEADER
-    ---------------------------------------------------------- -->
+    <!-- 🔥 HEADER -->
     <header class="main-header">
         <h1 id="user-title">Mes véhicules</h1>
 
@@ -24,26 +21,21 @@
         </nav>
     </header>
 
-
-    <!-- ---------------------------------------------------------
-         🔥 LISTE DES VÉHICULES
-    ---------------------------------------------------------- -->
+    <!-- 🔥 LISTE DES VÉHICULES -->
     <section class="vehicle-section">
-        <div id="vehicleList" class="vehicle-list">
-            <!-- Véhicules chargés par compteur.js -->
-        </div>
+        <div id="vehicleList" class="vehicle-list"></div>
     </section>
 
-
-    <!-- ---------------------------------------------------------
-         🔥 MODAL AJOUT
-    ---------------------------------------------------------- -->
+    <!-- 🔥 MODAL AJOUT -->
     <div id="addModal" class="modal">
         <div class="modal-content">
             <h2>Ajouter un véhicule</h2>
 
             <label>Nom du véhicule :</label>
-            <input type="text" id="vehicleName" placeholder="Ex : Kangoo, Clio, etc.">
+            <input type="text" id="vehicleName" placeholder="Ex : Kangoo, Clio...">
+
+            <label>Importer une image :</label>
+            <input type="file" id="imageFile" accept="image/*">
 
             <button id="openCameraBtn" class="btn-secondary">Prendre une photo</button>
             <video id="cameraPreview" autoplay style="display:none;"></video>
@@ -55,10 +47,7 @@
         </div>
     </div>
 
-
-    <!-- ---------------------------------------------------------
-         🔥 MODAL ÉDITION
-    ---------------------------------------------------------- -->
+    <!-- 🔥 MODAL ÉDITION -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <h2>Modifier le véhicule</h2>
@@ -73,11 +62,6 @@
         </div>
     </div>
 
-
-    <!-- ---------------------------------------------------------
-         🔥 SCRIPTS
-    ---------------------------------------------------------- -->
     <script type="module" src="./js/compteur.js"></script>
-
 </body>
 </html>
