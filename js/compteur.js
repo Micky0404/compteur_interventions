@@ -293,12 +293,28 @@ async function incrementSortie(id) {
 
   if (!snap.exists()) return;
 
-  const sorties = snap.data().sorties || 0;
+  const v = snap.data();
+  const sorties = v.sorties || 0;
 
+  // 🔥 1) On incrémente le compteur
   await updateDoc(ref, { sorties: sorties + 1 });
+
+  // 🔥 2) On enregistre l'intervention dans l'historique
+  const now = new Date();
+  const date = now.toLocaleDateString("fr-FR");
+  const heure = now.toLocaleTimeString("fr-FR");
+
+  await addDoc(collection(db, "users", userId, "history"), {
+    vehicleId: id,
+    vehicleName: v.name,
+    date: date,
+    heure: heure,
+    createdAt: serverTimestamp()
+  });
 
   loadVehicles();
 }
+
 
 
 // ---------------------------------------------------------
