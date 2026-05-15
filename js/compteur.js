@@ -300,6 +300,7 @@ async function incrementSortie(id) {
   loadVehicles();
 }
 
+
 // ---------------------------------------------------------
 // 🔥 BOUTON ADMIN
 // ---------------------------------------------------------
@@ -307,22 +308,18 @@ const adminBtn = document.getElementById("admin-btn");
 
 if (adminBtn) {
   adminBtn.addEventListener("click", () => {
-    console.log("Bouton admin cliqué !");
     window.location.href = "./admin.html";
   });
 }
 
+
 // ---------------------------------------------------------
 // 🔥 BOUTON HISTORIQUE
 // ---------------------------------------------------------
-document.addEventListener("DOMContentLoaded", () => {
-    const historyBtn = document.getElementById("history-btn");
+const historyBtn = document.getElementById("history-btn");
 
-    if (historyBtn) {
-        historyBtn.addEventListener("click", () => {
-            console.log("Bouton historique cliqué !");
-            window.location.href = "./historique.html";
-        });
-    }
-});
-
+if (historyBtn) {
+  historyBtn.addEventListener("click", () => {
+    window.location.href = "./historique.html";
+  });
+}
