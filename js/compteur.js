@@ -315,13 +315,14 @@ if (adminBtn) {
 // ---------------------------------------------------------
 // 🔥 BOUTON HISTORIQUE
 // ---------------------------------------------------------
-const historyBtn = document.getElementById("history-btn");
+document.addEventListener("DOMContentLoaded", () => {
+    const historyBtn = document.getElementById("history-btn");
 
-if (historyBtn) {
-  historyBtn.addEventListener("click", () => {
-    console.log("Bouton historique cliqué !");
-    window.location.href = "./historique.html";
-  });
-}
-
+    if (historyBtn) {
+        historyBtn.addEventListener("click", () => {
+            console.log("Bouton historique cliqué !");
+            window.location.href = "./historique.html";
+        });
+    }
+});
 
