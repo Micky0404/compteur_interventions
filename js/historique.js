@@ -1,5 +1,5 @@
 import { auth, db } from "./firebase-config.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
   collection, 
   getDocs, 
@@ -37,27 +37,25 @@ onAuthStateChanged(auth, async (user) => {
 
     if (!snap.exists()) {
       alert("Erreur : utilisateur introuvable.");
-      await auth.signOut();
+      await signOut(auth);
       return;
     }
 
     const data = snap.data();
 
-    // 🔥 Bloquer si non validé
     if (!data.validated) {
       alert("Votre compte n'est pas encore validé.");
-      await auth.signOut();
+      await signOut(auth);
       return;
     }
 
-    // 🔥 Afficher bouton admin si nécessaire
     if (data.role === "admin" || data.isAdmin === true) {
       const adminBtn = document.getElementById("admin-btn");
       if (adminBtn) adminBtn.style.display = "block";
     }
 
     userId = user.uid;
-    loadHistory();
+    await loadHistory(); // 🔥 Attente explicite pour éviter les courses de données
 
   } catch (error) {
     console.error("Erreur auth :", error);
@@ -69,16 +67,15 @@ onAuthStateChanged(auth, async (user) => {
 // 🔥 Charger l’historique
 // ---------------------------------------------------------
 async function loadHistory() {
-  if (!tableBody) return;
+  if (!tableBody || !userId) return;
 
   try {
     const q = query(
       collection(db, "users", userId, "history"),
-      orderBy("createdAt", "asc")   // 🔥 Correction ici
+      orderBy("createdAt", "asc")
     );
 
     const snapshot = await getDocs(q);
-
     tableBody.innerHTML = "";
 
     if (snapshot.empty) {
@@ -96,14 +93,14 @@ async function loadHistory() {
 
     snapshot.forEach((docu) => {
       const data = docu.data();
-      if (!data.createdAt) return;   // 🔥 Correction ici
+      if (!data.createdAt) return;
 
       const date = data.createdAt.toDate();
 
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>${date.toLocaleDateString()}</td>
-        <td>${date.toLocaleTimeString()}</td>
+        <td>${date.toLocaleDateString("fr-FR")}</td>
+        <td>${date.toLocaleTimeString("fr-FR")}</td>
         <td>${data.vehicleName}</td>
       `;
       tableBody.appendChild(row);
@@ -120,7 +117,7 @@ async function loadHistory() {
 }
 
 // ---------------------------------------------------------
-// 🔥 Graphique DONUT premium
+// 🔥 Graphique DONUT
 // ---------------------------------------------------------
 function drawChart(vehicleCounts) {
   if (!chartCanvas) return;
@@ -140,7 +137,7 @@ function drawChart(vehicleCounts) {
   currentChart = new Chart(chartCanvas, {
     type: "doughnut",
     data: {
-      labels: labels,
+      labels,
       datasets: [{
         data: values,
         backgroundColor: [
@@ -159,4 +156,10 @@ function drawChart(vehicleCounts) {
       plugins: {
         datalabels: {
           color: "#fff",
-          font: {
+          font: { weight: "bold", size: 14 },
+          formatter: (value) => value
+        }
+      }
+    }
+  });
+}
