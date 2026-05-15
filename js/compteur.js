@@ -299,3 +299,16 @@ async function incrementSortie(id) {
 
   loadVehicles();
 }
+
+// ---------------------------------------------------------
+// 🔥 BOUTON ADMIN
+// ---------------------------------------------------------
+const adminBtn = document.getElementById("admin-btn");
+
+if (adminBtn) {
+  adminBtn.addEventListener("click", () => {
+    console.log("Bouton admin cliqué !");
+    window.location.href = "./admin.html";
+  });
+}
+
