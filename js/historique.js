@@ -9,7 +9,7 @@ import {
   getDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-let table;
+let tableBody;
 let chartCanvas;
 let currentChart = null;
 let userId = null;
@@ -18,7 +18,7 @@ let userId = null;
 // 🔥 DOM READY
 // ---------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
-  table = document.getElementById("history-table");
+  tableBody = document.getElementById("history-table-body");
   chartCanvas = document.getElementById("chart");
 });
 
@@ -69,20 +69,20 @@ onAuthStateChanged(auth, async (user) => {
 // 🔥 Charger l’historique
 // ---------------------------------------------------------
 async function loadHistory() {
-  if (!table) return;
+  if (!tableBody) return;
 
   try {
     const q = query(
       collection(db, "users", userId, "history"),
-      orderBy("timestamp", "asc")
+      orderBy("createdAt", "asc")   // 🔥 Correction ici
     );
 
     const snapshot = await getDocs(q);
 
-    table.innerHTML = "";
+    tableBody.innerHTML = "";
 
     if (snapshot.empty) {
-      table.innerHTML = `
+      tableBody.innerHTML = `
         <tr>
           <td colspan="3" style="text-align:center; opacity:0.7;">
             Aucun historique pour le moment
@@ -96,9 +96,9 @@ async function loadHistory() {
 
     snapshot.forEach((docu) => {
       const data = docu.data();
-      if (!data.timestamp) return;
+      if (!data.createdAt) return;   // 🔥 Correction ici
 
-      const date = data.timestamp.toDate();
+      const date = data.createdAt.toDate();
 
       const row = document.createElement("tr");
       row.innerHTML = `
@@ -106,7 +106,7 @@ async function loadHistory() {
         <td>${date.toLocaleTimeString()}</td>
         <td>${data.vehicleName}</td>
       `;
-      table.appendChild(row);
+      tableBody.appendChild(row);
 
       vehicleCounts[data.vehicleName] = (vehicleCounts[data.vehicleName] || 0) + 1;
     });
@@ -115,7 +115,7 @@ async function loadHistory() {
 
   } catch (error) {
     console.error("Erreur chargement historique :", error);
-    table.innerHTML = "<tr><td colspan='3'>Erreur lors du chargement.</td></tr>";
+    tableBody.innerHTML = "<tr><td colspan='3'>Erreur lors du chargement.</td></tr>";
   }
 }
 
@@ -135,22 +135,28 @@ function drawChart(vehicleCounts) {
 
   chartCanvas.style.display = "block";
 
-  const total = values.reduce((a, b) => a + b, 0);
-
   if (currentChart) currentChart.destroy();
-
-  const centerImage = new Image();
-  centerImage.src = "./monimage.png";
 
   currentChart = new Chart(chartCanvas, {
     type: "doughnut",
-    plugins: [
-      ChartDataLabels,
-      {
-        id: "centerImagePlugin",
-        afterDraw(chart) {
-          if (!centerImage.complete) return;
-
-          const { ctx, chartArea: { width, height } } = chart;
-
-          const imgSize = Math.min(width, height) * 0.35;
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: [
+          "#ff6384",
+          "#36a2eb",
+          "#ffcd56",
+          "#4bc0c0",
+          "#9966ff",
+          "#ff9f40"
+        ],
+        borderWidth: 2,
+        borderColor: "#fff"
+      }]
+    },
+    options: {
+      plugins: {
+        datalabels: {
+          color: "#fff",
+          font: {
